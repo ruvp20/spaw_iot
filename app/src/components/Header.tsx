@@ -1,5 +1,5 @@
 import React, { useRef, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Animated } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Animated, useWindowDimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../theme/ThemeContext';
 import { useFeeder } from '../context/FeederContext';
@@ -7,6 +7,9 @@ import { useFeeder } from '../context/FeederContext';
 export const Header: React.FC = () => {
   const { theme, isDark, toggleTheme } = useTheme();
   const { connectionStatus, isMockMode, feederIp, refreshStatus } = useFeeder();
+  const { width } = useWindowDimensions();
+  const isSmallMobile = width < 360;
+  const isTabletOrDesktop = width >= 768;
 
   // Animation values
   const spinAnim = useRef(new Animated.Value(isDark ? 1 : 0)).current;
@@ -100,60 +103,97 @@ export const Header: React.FC = () => {
 
   return (
     <View style={[styles.container, { backgroundColor: theme.background, borderBottomColor: theme.borderLight }]}>
-      {/* Brand & Subtitle */}
-      <View style={styles.brandGroup}>
-        <View style={styles.titleRow}>
-          <View style={[styles.brandIcon, { backgroundColor: theme.primaryTint }]}>
-            <Ionicons name="paw" size={14} color={isDark ? theme.primaryInteractive : theme.primary} />
+      <View
+        style={[
+          styles.innerContainer,
+          {
+            maxWidth: isTabletOrDesktop ? 680 : '100%',
+            paddingHorizontal: isSmallMobile ? 12 : isTabletOrDesktop ? 24 : 18,
+          },
+        ]}
+      >
+        {/* Brand & Subtitle */}
+        <View style={styles.brandGroup}>
+          <View style={styles.titleRow}>
+            <View style={[styles.brandIcon, { backgroundColor: theme.primaryTint }]}>
+              <Ionicons name="paw" size={14} color={isDark ? theme.primaryInteractive : theme.primary} />
+            </View>
+            <Text style={[styles.title, { color: theme.textPrimary, fontSize: isSmallMobile ? 15 : 16 }]}>
+              SPAW
+            </Text>
+            <View style={[styles.dotSep, { backgroundColor: theme.border }]} />
+            <Text
+              style={[
+                styles.subtitle,
+                {
+                  color: theme.textMuted,
+                  fontSize: isSmallMobile ? 9 : 10,
+                  maxWidth: isSmallMobile ? 90 : 160,
+                },
+              ]}
+              numberOfLines={1}
+            >
+              {isMockMode ? 'SIMULATOR' : feederIp.toUpperCase()}
+            </Text>
           </View>
-          <Text style={[styles.title, { color: theme.textPrimary }]}>SPAW</Text>
-          <View style={[styles.dotSep, { backgroundColor: theme.border }]} />
-          <Text style={[styles.subtitle, { color: theme.textMuted }]}>
-            {isMockMode ? 'SIMULATOR' : feederIp.toUpperCase()}
-          </Text>
         </View>
-      </View>
 
-      {/* Right Actions: Status Badge & Animated Theme Toggle */}
-      <View style={styles.actionGroup}>
-        {/* Connection status pill */}
-        <TouchableOpacity
-          style={[styles.statusPill, { backgroundColor: status.bg, borderColor: theme.borderLight }]}
-          onPress={refreshStatus}
-          activeOpacity={0.7}
-        >
-          <Animated.View
+        {/* Right Actions: Status Badge & Animated Theme Toggle */}
+        <View style={styles.actionGroup}>
+          {/* Connection status pill */}
+          <TouchableOpacity
             style={[
-              styles.statusDot,
-              { backgroundColor: status.dot, opacity: pulseAnim },
-            ]}
-          />
-          <Text style={[styles.statusLabel, { color: status.color }]}>{status.label}</Text>
-        </TouchableOpacity>
-
-        {/* Animated Theme Toggle Button */}
-        <TouchableOpacity
-          onPress={handleToggleTheme}
-          activeOpacity={0.8}
-          accessibilityLabel="Toggle Theme"
-        >
-          <Animated.View
-            style={[
-              styles.themeBtn,
+              styles.statusPill,
               {
-                backgroundColor: theme.surface,
-                borderColor: theme.border,
-                transform: [{ rotate: spin }, { scale: scaleAnim }],
+                backgroundColor: status.bg,
+                borderColor: theme.borderLight,
+                paddingHorizontal: isSmallMobile ? 7 : 9,
+                paddingVertical: isSmallMobile ? 3 : 4,
               },
             ]}
+            onPress={refreshStatus}
+            activeOpacity={0.7}
           >
-            <Ionicons
-              name={isDark ? 'sunny' : 'moon'}
-              size={14}
-              color={isDark ? theme.accentOchre : theme.textSecondary}
+            <Animated.View
+              style={[
+                styles.statusDot,
+                { backgroundColor: status.dot, opacity: pulseAnim },
+              ]}
             />
-          </Animated.View>
-        </TouchableOpacity>
+            <Text
+              style={[
+                styles.statusLabel,
+                { color: status.color, fontSize: isSmallMobile ? 9 : 10 },
+              ]}
+            >
+              {status.label}
+            </Text>
+          </TouchableOpacity>
+
+          {/* Animated Theme Toggle Button */}
+          <TouchableOpacity
+            onPress={handleToggleTheme}
+            activeOpacity={0.8}
+            accessibilityLabel="Toggle Theme"
+          >
+            <Animated.View
+              style={[
+                styles.themeBtn,
+                {
+                  backgroundColor: theme.surface,
+                  borderColor: theme.border,
+                  transform: [{ rotate: spin }, { scale: scaleAnim }],
+                },
+              ]}
+            >
+              <Ionicons
+                name={isDark ? 'sunny' : 'moon'}
+                size={14}
+                color={isDark ? theme.accentOchre : theme.textSecondary}
+              />
+            </Animated.View>
+          </TouchableOpacity>
+        </View>
       </View>
     </View>
   );
@@ -161,13 +201,18 @@ export const Header: React.FC = () => {
 
 const styles = StyleSheet.create({
   container: {
+    borderBottomWidth: 1,
+    paddingTop: 12,
+    paddingBottom: 12,
+    width: '100%',
+    alignItems: 'center',
+  },
+  innerContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingTop: 12,
-    paddingBottom: 12,
-    borderBottomWidth: 1,
+    width: '100%',
+    alignSelf: 'center',
   },
   brandGroup: {
     justifyContent: 'center',
@@ -185,7 +230,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   title: {
-    fontSize: 16,
     fontWeight: '800',
     letterSpacing: 1.5,
   },
@@ -195,7 +239,6 @@ const styles = StyleSheet.create({
     borderRadius: 2,
   },
   subtitle: {
-    fontSize: 10,
     fontWeight: '600',
     fontFamily: 'monospace',
     letterSpacing: 0.8,
@@ -208,8 +251,6 @@ const styles = StyleSheet.create({
   statusPill: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 9,
-    paddingVertical: 4,
     borderRadius: 12,
     borderWidth: 1,
     gap: 5,
@@ -220,7 +261,6 @@ const styles = StyleSheet.create({
     borderRadius: 3,
   },
   statusLabel: {
-    fontSize: 10,
     fontWeight: '700',
     letterSpacing: 0.6,
   },

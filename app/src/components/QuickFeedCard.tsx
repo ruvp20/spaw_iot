@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Modal, TextInput, Animated } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Modal, TextInput, Animated, useWindowDimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../theme/ThemeContext';
 import { useFeeder } from '../context/FeederContext';
@@ -7,6 +7,11 @@ import { useFeeder } from '../context/FeederContext';
 export const QuickFeedCard: React.FC = () => {
   const { theme, isDark } = useTheme();
   const { dispenseFood, isDispensing } = useFeeder();
+  const { width } = useWindowDimensions();
+  const isSmallMobile = width < 360;
+  const isNarrow = width < 420;
+  const isTabletOrDesktop = width >= 768;
+
   const [modalVisible, setModalVisible] = useState(false);
   const [customInput, setCustomInput] = useState('35');
 
@@ -50,6 +55,8 @@ export const QuickFeedCard: React.FC = () => {
           backgroundColor: theme.surface,
           borderColor: theme.border,
           shadowColor: theme.cardShadow,
+          padding: isSmallMobile ? 14 : isNarrow ? 16 : isTabletOrDesktop ? 22 : 18,
+          borderRadius: isSmallMobile ? 16 : 20,
         },
       ]}
     >
@@ -74,7 +81,7 @@ export const QuickFeedCard: React.FC = () => {
       </View>
 
       {/* Grid of 4 portion buttons with tactile scale animations */}
-      <View style={styles.buttonsGrid}>
+      <View style={[styles.buttonsGrid, { gap: isSmallMobile ? 6 : 8 }]}>
         {/* 20g Snack */}
         <TouchableOpacity
           onPress={() => animatePress(btn20Scale, () => dispenseFood(20))}
@@ -88,12 +95,28 @@ export const QuickFeedCard: React.FC = () => {
               {
                 backgroundColor: theme.surfaceLight,
                 borderColor: theme.borderLight,
+                paddingVertical: isSmallMobile ? 8 : 12,
                 transform: [{ scale: btn20Scale }],
               },
             ]}
           >
-            <Text style={[styles.btnAmount, { color: theme.textPrimary }]}>20g</Text>
-            <Text style={[styles.btnLabel, { color: theme.textMuted }]}>Snack</Text>
+            <Text
+              style={[
+                styles.btnAmount,
+                { color: theme.textPrimary, fontSize: isSmallMobile ? 14 : 16 },
+              ]}
+            >
+              20g
+            </Text>
+            <Text
+              style={[
+                styles.btnLabel,
+                { color: theme.textMuted, fontSize: isSmallMobile ? 9 : 10 },
+              ]}
+              numberOfLines={1}
+            >
+              Snack
+            </Text>
           </Animated.View>
         </TouchableOpacity>
 
@@ -111,6 +134,7 @@ export const QuickFeedCard: React.FC = () => {
               {
                 backgroundColor: theme.primaryTint,
                 borderColor: isDark ? theme.primaryInteractive : theme.primary,
+                paddingVertical: isSmallMobile ? 8 : 12,
                 transform: [{ scale: btn40Scale }],
               },
             ]}
@@ -119,7 +143,10 @@ export const QuickFeedCard: React.FC = () => {
               <Text
                 style={[
                   styles.recBadgeText,
-                  { color: isDark ? theme.primaryInteractive : theme.primary },
+                  {
+                    color: isDark ? theme.primaryInteractive : theme.primary,
+                    fontSize: isSmallMobile ? 7 : 8,
+                  },
                 ]}
               >
                 Meal
@@ -128,7 +155,10 @@ export const QuickFeedCard: React.FC = () => {
             <Text
               style={[
                 styles.btnAmount,
-                { color: isDark ? theme.primaryInteractive : theme.primary },
+                {
+                  color: isDark ? theme.primaryInteractive : theme.primary,
+                  fontSize: isSmallMobile ? 14 : 16,
+                },
               ]}
             >
               40g
@@ -136,8 +166,12 @@ export const QuickFeedCard: React.FC = () => {
             <Text
               style={[
                 styles.btnLabel,
-                { color: isDark ? theme.primaryInteractive : theme.primary },
+                {
+                  color: isDark ? theme.primaryInteractive : theme.primary,
+                  fontSize: isSmallMobile ? 9 : 10,
+                },
               ]}
+              numberOfLines={1}
             >
               Standard
             </Text>
@@ -157,12 +191,28 @@ export const QuickFeedCard: React.FC = () => {
               {
                 backgroundColor: theme.surfaceLight,
                 borderColor: theme.borderLight,
+                paddingVertical: isSmallMobile ? 8 : 12,
                 transform: [{ scale: btn60Scale }],
               },
             ]}
           >
-            <Text style={[styles.btnAmount, { color: theme.textPrimary }]}>60g</Text>
-            <Text style={[styles.btnLabel, { color: theme.textMuted }]}>Generous</Text>
+            <Text
+              style={[
+                styles.btnAmount,
+                { color: theme.textPrimary, fontSize: isSmallMobile ? 14 : 16 },
+              ]}
+            >
+              60g
+            </Text>
+            <Text
+              style={[
+                styles.btnLabel,
+                { color: theme.textMuted, fontSize: isSmallMobile ? 9 : 10 },
+              ]}
+              numberOfLines={1}
+            >
+              Generous
+            </Text>
           </Animated.View>
         </TouchableOpacity>
 
@@ -179,17 +229,28 @@ export const QuickFeedCard: React.FC = () => {
               {
                 backgroundColor: theme.surfaceLight,
                 borderColor: theme.borderLight,
+                paddingVertical: isSmallMobile ? 8 : 12,
                 transform: [{ scale: btnCustomScale }],
               },
             ]}
           >
             <Ionicons
               name="options-outline"
-              size={16}
+              size={isSmallMobile ? 14 : 16}
               color={theme.textSecondary}
               style={{ marginBottom: 2 }}
             />
-            <Text style={[styles.btnLabel, { color: theme.textSecondary, fontWeight: '600' }]}>
+            <Text
+              style={[
+                styles.btnLabel,
+                {
+                  color: theme.textSecondary,
+                  fontWeight: '600',
+                  fontSize: isSmallMobile ? 9 : 10,
+                },
+              ]}
+              numberOfLines={1}
+            >
               Custom
             </Text>
           </Animated.View>
@@ -210,11 +271,13 @@ export const QuickFeedCard: React.FC = () => {
               {
                 backgroundColor: theme.surfaceElevated,
                 borderColor: theme.border,
+                maxWidth: isSmallMobile ? 320 : 360,
+                padding: isSmallMobile ? 16 : 22,
               },
             ]}
           >
             <View style={styles.modalHeader}>
-              <View>
+              <View style={{ flex: 1 }}>
                 <Text style={[styles.modalTitle, { color: theme.textPrimary }]}>
                   Custom Portion
                 </Text>
@@ -244,6 +307,7 @@ export const QuickFeedCard: React.FC = () => {
                   styles.input,
                   {
                     color: theme.textPrimary,
+                    fontSize: isSmallMobile ? 28 : 34,
                     borderWidth: 0,
                     outlineWidth: 0,
                     outlineStyle: 'none',
@@ -277,6 +341,7 @@ export const QuickFeedCard: React.FC = () => {
                             ? theme.primaryInteractive
                             : theme.primary
                           : 'transparent',
+                        paddingVertical: isSmallMobile ? 5 : 7,
                       },
                     ]}
                     onPress={() => handleQuickPreset(val)}
@@ -290,6 +355,7 @@ export const QuickFeedCard: React.FC = () => {
                               ? theme.primaryInteractive
                               : theme.primary
                             : theme.textSecondary,
+                          fontSize: isSmallMobile ? 10 : 11,
                         },
                       ]}
                     >
@@ -332,15 +398,13 @@ export const QuickFeedCard: React.FC = () => {
 
 const styles = StyleSheet.create({
   card: {
-    borderRadius: 20,
-    padding: 18,
-    marginHorizontal: 20,
     marginBottom: 12,
     borderWidth: 1,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.08,
     shadowRadius: 16,
     elevation: 2,
+    width: '100%',
   },
   headerRow: {
     flexDirection: 'row',
@@ -371,41 +435,37 @@ const styles = StyleSheet.create({
   },
   buttonsGrid: {
     flexDirection: 'row',
-    gap: 8,
   },
   feedBtnWrapper: {
     flex: 1,
   },
   feedBtn: {
-    paddingVertical: 12,
     borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
     position: 'relative',
+    minHeight: 56,
   },
   feedBtnRecommended: {
     borderWidth: 1.2,
   },
   recBadge: {
     position: 'absolute',
-    top: 4,
+    top: 3,
   },
   recBadgeText: {
-    fontSize: 8,
     fontWeight: '800',
     letterSpacing: 0.5,
     textTransform: 'uppercase',
   },
   btnAmount: {
-    fontSize: 16,
     fontWeight: '800',
     letterSpacing: -0.4,
-    marginTop: 5,
+    marginTop: 4,
   },
   btnLabel: {
-    fontSize: 10,
-    marginTop: 2,
+    marginTop: 1,
     fontWeight: '500',
   },
   modalBackdrop: {
@@ -413,13 +473,11 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.65)',
     alignItems: 'center',
     justifyContent: 'center',
-    padding: 24,
+    padding: 20,
   },
   modalContent: {
     width: '100%',
-    maxWidth: 360,
     borderRadius: 20,
-    padding: 22,
     borderWidth: 1,
   },
   modalHeader: {
@@ -450,7 +508,6 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   input: {
-    fontSize: 34,
     fontWeight: '800',
     textAlign: 'center',
     paddingVertical: 8,
@@ -470,13 +527,11 @@ const styles = StyleSheet.create({
   },
   chip: {
     flex: 1,
-    paddingVertical: 7,
     borderRadius: 8,
     alignItems: 'center',
     borderWidth: 1,
   },
   chipText: {
-    fontSize: 11,
     fontWeight: '600',
   },
   modalActions: {

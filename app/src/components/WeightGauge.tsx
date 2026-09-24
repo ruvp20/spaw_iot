@@ -1,5 +1,5 @@
 import React, { useRef, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Animated } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Animated, useWindowDimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../theme/ThemeContext';
 import { useFeeder } from '../context/FeederContext';
@@ -7,6 +7,10 @@ import { useFeeder } from '../context/FeederContext';
 export const WeightGauge: React.FC = () => {
   const { theme, isDark } = useTheme();
   const { status, isDispensing, dispenseStage, activeTargetGrams, tareScale } = useFeeder();
+  const { width } = useWindowDimensions();
+  const isSmallMobile = width < 360;
+  const isNarrow = width < 420;
+  const isTabletOrDesktop = width >= 768;
 
   const maxCapacity = 300;
   const percentage = Math.min(100, Math.max(0, (status.weight / maxCapacity) * 100));
@@ -72,6 +76,9 @@ export const WeightGauge: React.FC = () => {
     tareScale();
   };
 
+  const dialOuterSize = isSmallMobile ? 172 : 196;
+  const dialInnerSize = isSmallMobile ? 152 : 174;
+
   return (
     <View
       style={[
@@ -80,6 +87,8 @@ export const WeightGauge: React.FC = () => {
           backgroundColor: theme.surface,
           borderColor: theme.border,
           shadowColor: theme.cardShadow,
+          padding: isSmallMobile ? 14 : isNarrow ? 16 : isTabletOrDesktop ? 22 : 18,
+          borderRadius: isSmallMobile ? 16 : 20,
         },
       ]}
     >
@@ -121,6 +130,9 @@ export const WeightGauge: React.FC = () => {
           style={[
             styles.outerDial,
             {
+              width: dialOuterSize,
+              height: dialOuterSize,
+              borderRadius: dialOuterSize / 2,
               borderColor: isDispensing ? theme.accentClay : theme.border,
               backgroundColor: isDispensing ? theme.accentClayTint : theme.surfaceLight,
               transform: [{ scale: Animated.multiply(dialEntrance, pulseAnim) }],
@@ -132,6 +144,9 @@ export const WeightGauge: React.FC = () => {
             style={[
               styles.innerDial,
               {
+                width: dialInnerSize,
+                height: dialInnerSize,
+                borderRadius: dialInnerSize / 2,
                 backgroundColor: theme.surface,
                 borderColor: theme.borderLight,
                 shadowColor: theme.cardShadow,
@@ -151,7 +166,12 @@ export const WeightGauge: React.FC = () => {
             ) : (
               <>
                 <View style={styles.weightValueRow}>
-                  <Text style={[styles.weightValue, { color: theme.textPrimary }]}>
+                  <Text
+                    style={[
+                      styles.weightValue,
+                      { color: theme.textPrimary, fontSize: isSmallMobile ? 40 : 50 },
+                    ]}
+                  >
                     {status.weight.toFixed(0)}
                   </Text>
                   <Text style={[styles.weightUnit, { color: theme.textMuted }]}>g</Text>
@@ -223,16 +243,13 @@ export const WeightGauge: React.FC = () => {
 
 const styles = StyleSheet.create({
   card: {
-    borderRadius: 20,
-    padding: 20,
-    marginHorizontal: 20,
-    marginTop: 12,
     marginBottom: 12,
     borderWidth: 1,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.08,
     shadowRadius: 16,
     elevation: 2,
+    width: '100%',
   },
   headerRow: {
     flexDirection: 'row',
@@ -267,21 +284,15 @@ const styles = StyleSheet.create({
   gaugeContainer: {
     alignItems: 'center',
     justifyContent: 'center',
-    marginVertical: 14,
+    marginVertical: 12,
   },
   outerDial: {
-    width: 196,
-    height: 196,
-    borderRadius: 98,
     borderWidth: 1.5,
     alignItems: 'center',
     justifyContent: 'center',
     padding: 6,
   },
   innerDial: {
-    width: 174,
-    height: 174,
-    borderRadius: 87,
     borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
@@ -297,7 +308,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   weightValue: {
-    fontSize: 50,
     fontWeight: '800',
     letterSpacing: -2,
   },

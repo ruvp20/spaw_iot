@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, useWindowDimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../theme/ThemeContext';
 import { useFeeder } from '../context/FeederContext';
@@ -8,6 +8,10 @@ import { HistoryRecord } from '../types';
 export const HistoryScreen: React.FC = () => {
   const { theme, isDark } = useTheme();
   const { history, refreshStatus } = useFeeder();
+  const { width } = useWindowDimensions();
+  const isSmallMobile = width < 360;
+  const isNarrow = width < 420;
+  const isTabletOrDesktop = width >= 768;
 
   const getTypeBadge = (type: string) => {
     switch (type) {
@@ -50,6 +54,8 @@ export const HistoryScreen: React.FC = () => {
             backgroundColor: theme.surface,
             borderColor: theme.border,
             shadowColor: theme.cardShadow,
+            padding: isSmallMobile ? 12 : 14,
+            borderRadius: isSmallMobile ? 14 : 16,
           },
         ]}
       >
@@ -73,7 +79,12 @@ export const HistoryScreen: React.FC = () => {
         <View style={styles.weightComparisonRow}>
           <View style={styles.weightBlock}>
             <Text style={[styles.weightLabel, { color: theme.textMuted }]}>TARGET</Text>
-            <Text style={[styles.weightGrams, { color: theme.textPrimary }]}>
+            <Text
+              style={[
+                styles.weightGrams,
+                { color: theme.textPrimary, fontSize: isSmallMobile ? 13 : 15 },
+              ]}
+            >
               {item.targetGrams}g
             </Text>
           </View>
@@ -82,22 +93,30 @@ export const HistoryScreen: React.FC = () => {
             name="arrow-forward"
             size={12}
             color={theme.border}
-            style={{ marginHorizontal: 8 }}
+            style={{ marginHorizontal: isSmallMobile ? 4 : 8 }}
           />
 
-          <View style={styles.weightBlock}>
+          <View style={[styles.weightBlock, { flex: isSmallMobile ? 1.4 : 1 }]}>
             <Text style={[styles.weightLabel, { color: theme.textMuted }]}>DELIVERED</Text>
             <View style={styles.deliveredRow}>
               <Text
                 style={[
                   styles.weightGrams,
-                  { color: isSuccess ? theme.textPrimary : theme.danger },
+                  {
+                    color: isSuccess ? theme.textPrimary : theme.danger,
+                    fontSize: isSmallMobile ? 13 : 15,
+                  },
                 ]}
               >
                 {item.actualGrams}g
               </Text>
               {isSuccess && (
-                <Text style={[styles.varianceText, { color: theme.textMuted }]}>
+                <Text
+                  style={[
+                    styles.varianceText,
+                    { color: theme.textMuted, fontSize: isSmallMobile ? 9 : 10 },
+                  ]}
+                >
                   ({varianceSign}g)
                 </Text>
               )}
@@ -106,15 +125,31 @@ export const HistoryScreen: React.FC = () => {
 
           <View style={styles.statusIndicator}>
             {isSuccess ? (
-              <View style={[styles.statusCapsule, { backgroundColor: theme.successTint }]}>
-                <Ionicons name="checkmark" size={11} color={theme.success} style={{ marginRight: 3 }} />
+              <View
+                style={[
+                  styles.statusCapsule,
+                  {
+                    backgroundColor: theme.successTint,
+                    paddingHorizontal: isSmallMobile ? 5 : 7,
+                  },
+                ]}
+              >
+                <Ionicons name="checkmark" size={11} color={theme.success} style={{ marginRight: 2 }} />
                 <Text style={[styles.statusTextSuccess, { color: theme.success }]}>
                   OK
                 </Text>
               </View>
             ) : (
-              <View style={[styles.statusCapsule, { backgroundColor: theme.dangerTint }]}>
-                <Ionicons name="alert" size={11} color={theme.danger} style={{ marginRight: 3 }} />
+              <View
+                style={[
+                  styles.statusCapsule,
+                  {
+                    backgroundColor: theme.dangerTint,
+                    paddingHorizontal: isSmallMobile ? 5 : 7,
+                  },
+                ]}
+              >
+                <Ionicons name="alert" size={11} color={theme.danger} style={{ marginRight: 2 }} />
                 <Text style={[styles.statusTextFail, { color: theme.danger }]}>
                   {item.status}
                 </Text>
@@ -128,15 +163,23 @@ export const HistoryScreen: React.FC = () => {
 
   return (
     <View style={[styles.container, { backgroundColor: theme.background }]}>
-      <View style={styles.header}>
-        <View>
+      <View
+        style={[
+          styles.headerWrapper,
+          {
+            maxWidth: isTabletOrDesktop ? 680 : 640,
+            paddingHorizontal: isSmallMobile ? 12 : isNarrow ? 16 : isTabletOrDesktop ? 24 : 18,
+          },
+        ]}
+      >
+        <View style={{ flex: 1, minWidth: 0, paddingRight: 8 }}>
           <Text style={[styles.eyebrow, { color: theme.textMuted }]}>
             AUDIT TELEMETRY
           </Text>
-          <Text style={[styles.headerTitle, { color: theme.textPrimary }]}>
+          <Text style={[styles.headerTitle, { color: theme.textPrimary, fontSize: isSmallMobile ? 15 : 16 }]}>
             Feeding History
           </Text>
-          <Text style={[styles.headerSubtitle, { color: theme.textSecondary }]}>
+          <Text style={[styles.headerSubtitle, { color: theme.textSecondary }]} numberOfLines={1}>
             {history.length} events logged by HX711 strain gauge
           </Text>
         </View>
@@ -173,7 +216,13 @@ export const HistoryScreen: React.FC = () => {
           data={history}
           keyExtractor={(item) => item.id}
           renderItem={renderItem}
-          contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 28 }}
+          contentContainerStyle={{
+            paddingHorizontal: isSmallMobile ? 12 : isNarrow ? 16 : isTabletOrDesktop ? 24 : 18,
+            paddingBottom: 36,
+            width: '100%',
+            maxWidth: isTabletOrDesktop ? 680 : 640,
+            alignSelf: 'center',
+          }}
           showsVerticalScrollIndicator={false}
         />
       )}
@@ -185,13 +234,14 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  header: {
+  headerWrapper: {
     flexDirection: 'row',
     alignItems: 'flex-start',
     justifyContent: 'space-between',
-    paddingHorizontal: 20,
     paddingTop: 16,
     paddingBottom: 12,
+    width: '100%',
+    alignSelf: 'center',
   },
   eyebrow: {
     fontSize: 9,
@@ -200,7 +250,6 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
   headerTitle: {
-    fontSize: 16,
     fontWeight: '700',
     letterSpacing: -0.2,
   },
@@ -217,14 +266,13 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   historyCard: {
-    borderRadius: 16,
-    padding: 14,
     marginBottom: 9,
     borderWidth: 1,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.04,
     shadowRadius: 8,
     elevation: 1,
+    width: '100%',
   },
   cardTopRow: {
     flexDirection: 'row',
@@ -262,16 +310,14 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
   weightGrams: {
-    fontSize: 15,
     fontWeight: '700',
   },
   deliveredRow: {
     flexDirection: 'row',
     alignItems: 'baseline',
-    gap: 4,
+    gap: 3,
   },
   varianceText: {
-    fontSize: 10,
     fontFamily: 'monospace',
   },
   statusIndicator: {
@@ -280,7 +326,6 @@ const styles = StyleSheet.create({
   statusCapsule: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 7,
     paddingVertical: 2,
     borderRadius: 6,
   },

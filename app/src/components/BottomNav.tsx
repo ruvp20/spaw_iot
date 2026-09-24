@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, useWindowDimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../theme/ThemeContext';
 
@@ -12,6 +12,9 @@ interface BottomNavProps {
 
 export const BottomNav: React.FC<BottomNavProps> = ({ currentTab, onSelectTab }) => {
   const { theme, isDark } = useTheme();
+  const { width } = useWindowDimensions();
+  const isSmallMobile = width < 360;
+  const isTabletOrDesktop = width >= 768;
 
   const tabs: {
     key: TabKey;
@@ -36,55 +39,78 @@ export const BottomNav: React.FC<BottomNavProps> = ({ currentTab, onSelectTab })
         },
       ]}
     >
-      {tabs.map((tab) => {
-        const isActive = currentTab === tab.key;
-        const activeColor = isDark ? theme.primaryInteractive : theme.primary;
-        return (
-          <TouchableOpacity
-            key={tab.key}
-            style={styles.tabItem}
-            onPress={() => onSelectTab(tab.key)}
-            activeOpacity={0.7}
-          >
-            <View
-              style={[
-                styles.iconContainer,
-                isActive && {
-                  backgroundColor: theme.primaryTint,
-                },
-              ]}
+      <View
+        style={[
+          styles.innerRow,
+          {
+            maxWidth: isTabletOrDesktop ? 680 : '100%',
+            paddingHorizontal: isSmallMobile ? 4 : 8,
+          },
+        ]}
+      >
+        {tabs.map((tab) => {
+          const isActive = currentTab === tab.key;
+          const activeColor = isDark ? theme.primaryInteractive : theme.primary;
+          return (
+            <TouchableOpacity
+              key={tab.key}
+              style={styles.tabItem}
+              onPress={() => onSelectTab(tab.key)}
+              activeOpacity={0.7}
             >
-              <Ionicons
-                name={isActive ? tab.iconActive : tab.icon}
-                size={17}
-                color={isActive ? activeColor : theme.textMuted}
-              />
-            </View>
-            <Text
-              style={[
-                styles.tabLabel,
-                { color: isActive ? activeColor : theme.textMuted },
-                isActive && styles.tabLabelActive,
-              ]}
-            >
-              {tab.label}
-            </Text>
-          </TouchableOpacity>
-        );
-      })}
+              <View
+                style={[
+                  styles.iconContainer,
+                  {
+                    paddingHorizontal: isSmallMobile ? 10 : 14,
+                    paddingVertical: isSmallMobile ? 3 : 4,
+                  },
+                  isActive && {
+                    backgroundColor: theme.primaryTint,
+                  },
+                ]}
+              >
+                <Ionicons
+                  name={isActive ? tab.iconActive : tab.icon}
+                  size={isSmallMobile ? 16 : 17}
+                  color={isActive ? activeColor : theme.textMuted}
+                />
+              </View>
+              <Text
+                style={[
+                  styles.tabLabel,
+                  {
+                    color: isActive ? activeColor : theme.textMuted,
+                    fontSize: isSmallMobile ? 9 : 10,
+                  },
+                  isActive && styles.tabLabelActive,
+                ]}
+                numberOfLines={1}
+              >
+                {tab.label}
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
+      </View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    flexDirection: 'row',
     borderTopWidth: 1,
     paddingTop: 8,
     paddingBottom: 22,
-    paddingHorizontal: 12,
+    alignItems: 'center',
+    width: '100%',
+  },
+  innerRow: {
+    flexDirection: 'row',
+    width: '100%',
     justifyContent: 'space-around',
     alignItems: 'center',
+    alignSelf: 'center',
   },
   tabItem: {
     alignItems: 'center',
@@ -92,15 +118,12 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
   },
   iconContainer: {
-    paddingHorizontal: 14,
-    paddingVertical: 4,
     borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
     minHeight: 26,
   },
   tabLabel: {
-    fontSize: 10,
     fontWeight: '500',
     marginTop: 3,
     letterSpacing: 0.1,
