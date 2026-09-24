@@ -1,0 +1,13 @@
+{
+  "name": "spaw_iot-root",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Smart Pet Feeder Monorepo",
+  "scripts": {
+    "dev": "npm --prefix app start",
+    "start": "npm --prefix app start",
+    "web": "npm --prefix app run web",
+    "android": "npm --prefix app run android",
+    "ios": "npm --prefix app run ios"
+  }
+}
