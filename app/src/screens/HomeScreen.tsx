@@ -12,7 +12,7 @@ interface HomeScreenProps {
 }
 
 export const HomeScreen: React.FC<HomeScreenProps> = ({ onNavigateToSprint, onNavigateToFill }) => {
-  const { theme } = useTheme();
+  const { theme, isDark } = useTheme();
   const { sprint, status, executeFill, isDispensing } = useFeeder();
 
   const formatCountdown = (epoch: number) => {
@@ -47,30 +47,27 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onNavigateToSprint, onNa
         ]}
       >
         <View style={styles.fillBannerContent}>
-          <View style={styles.fillBadgeRow}>
-            <View style={[styles.fillDot, { backgroundColor: theme.accentSage }]} />
-            <Text style={[styles.fillBadgeLabel, { color: theme.accentSage }]}>
-              Automated Fill
-            </Text>
-          </View>
+          <Text style={[styles.eyebrow, { color: theme.textMuted }]}>
+            ONE-TAP REFILL
+          </Text>
           <Text style={[styles.fillTitle, { color: theme.textPrimary }]}>
             Bowl Fill • 250g Target
           </Text>
-          <Text style={[styles.fillDesc, { color: theme.textMuted }]}>
-            Continuous closed-loop bulk pour with anti-jam shutoff.
+          <Text style={[styles.fillDesc, { color: theme.textSecondary }]}>
+            Continuous closed-loop bulk pour with dynamic anti-jam gate throttling.
           </Text>
         </View>
 
         <TouchableOpacity
           style={[
             styles.fillActionBtn,
-            { backgroundColor: theme.primaryInteractive },
+            { backgroundColor: isDark ? theme.primaryInteractive : theme.primary },
           ]}
           onPress={executeFill}
           disabled={isDispensing}
           activeOpacity={0.8}
         >
-          <Ionicons name="play" size={13} color="#FFF" style={{ marginRight: 4 }} />
+          <Ionicons name="water" size={13} color="#FFF" style={{ marginRight: 5 }} />
           <Text style={styles.fillActionText}>Fill Bowl</Text>
         </TouchableOpacity>
       </View>
@@ -87,24 +84,26 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onNavigateToSprint, onNa
         ]}
       >
         <View style={styles.cardHeader}>
-          <View
-            style={[
-              styles.sprintIconCircle,
-              { backgroundColor: theme.accentOchreTint },
-            ]}
-          >
-            <Ionicons name="calendar-outline" size={15} color={theme.accentOchre} />
-          </View>
           <View style={{ flex: 1 }}>
-            <Text style={[styles.sprintTitle, { color: theme.textSecondary }]}>
-              Sprint Schedule
+            <Text style={[styles.eyebrow, { color: theme.textMuted }]}>
+              AUTONOMOUS DISPENSER
             </Text>
-            <Text style={[styles.sprintSubtitle, { color: theme.textMuted }]}>
-              {sprint.enabled ? 'Autonomous interval feeds active' : 'No active schedule configured'}
+            <Text style={[styles.sprintTitle, { color: theme.textPrimary }]}>
+              Interval Schedule
+            </Text>
+            <Text style={[styles.sprintSubtitle, { color: theme.textSecondary }]}>
+              {sprint.enabled ? 'Active RTC schedule running autonomously' : 'No active recurring schedule configured'}
             </Text>
           </View>
           <TouchableOpacity onPress={onNavigateToSprint} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-            <Text style={[styles.manageText, { color: theme.primaryInteractive }]}>Configure</Text>
+            <Text
+              style={[
+                styles.manageText,
+                { color: isDark ? theme.primaryInteractive : theme.primary },
+              ]}
+            >
+              Configure
+            </Text>
           </TouchableOpacity>
         </View>
 
@@ -141,12 +140,12 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onNavigateToSprint, onNa
           >
             <Ionicons
               name="add-outline"
-              size={16}
-              color={theme.accentOchre}
+              size={15}
+              color={theme.textSecondary}
               style={{ marginRight: 6 }}
             />
             <Text style={[styles.createSprintText, { color: theme.textPrimary }]}>
-              Set up scheduled feeds
+              Set up scheduled meal interval
             </Text>
           </TouchableOpacity>
         )}
@@ -158,14 +157,15 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onNavigateToSprint, onNa
           styles.telemetryCard,
           {
             backgroundColor: theme.surface,
-            borderColor: theme.borderLight,
+            borderColor: theme.border,
+            shadowColor: theme.cardShadow,
           },
         ]}
       >
         <View style={styles.telemetryItem}>
           <Ionicons
             name="wifi"
-            size={14}
+            size={13}
             color={status.wifi ? theme.success : theme.danger}
           />
           <Text style={[styles.telemetryText, { color: theme.textSecondary }]}>
@@ -176,7 +176,11 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onNavigateToSprint, onNa
         <View style={[styles.telemetryDivider, { backgroundColor: theme.borderLight }]} />
 
         <View style={styles.telemetryItem}>
-          <Ionicons name="hardware-chip-outline" size={14} color={theme.accentSage} />
+          <Ionicons
+            name="hardware-chip-outline"
+            size={13}
+            color={isDark ? theme.accentSage : theme.textSecondary}
+          />
           <Text style={[styles.telemetryText, { color: theme.textSecondary }]}>
             FW v{status.firmware}
           </Text>
@@ -185,7 +189,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onNavigateToSprint, onNa
         <View style={[styles.telemetryDivider, { backgroundColor: theme.borderLight }]} />
 
         <View style={styles.telemetryItem}>
-          <Ionicons name="shield-checkmark-outline" size={14} color={theme.success} />
+          <Ionicons name="shield-checkmark-outline" size={13} color={theme.success} />
           <Text style={[styles.telemetryText, { color: theme.textSecondary }]}>
             Anti-Jam OK
           </Text>
@@ -204,38 +208,27 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     marginHorizontal: 20,
-    marginBottom: 14,
+    marginBottom: 12,
     padding: 16,
     borderRadius: 20,
     borderWidth: 1,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 16,
     elevation: 2,
   },
   fillBannerContent: {
     flex: 1,
     paddingRight: 14,
   },
-  fillBadgeRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 5,
-    marginBottom: 3,
-  },
-  fillDot: {
-    width: 5,
-    height: 5,
-    borderRadius: 3,
-  },
-  fillBadgeLabel: {
-    fontSize: 10,
+  eyebrow: {
+    fontSize: 9,
     fontWeight: '700',
-    letterSpacing: 0.4,
-    textTransform: 'uppercase',
+    letterSpacing: 1.2,
+    marginBottom: 2,
   },
   fillTitle: {
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: '700',
     letterSpacing: -0.2,
   },
@@ -258,41 +251,34 @@ const styles = StyleSheet.create({
     letterSpacing: 0.2,
   },
   card: {
-    borderRadius: 22,
+    borderRadius: 20,
     padding: 18,
     marginHorizontal: 20,
-    marginBottom: 14,
+    marginBottom: 12,
     borderWidth: 1,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 16,
     elevation: 2,
   },
   cardHeader: {
     flexDirection: 'row',
-    alignItems: 'center',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
     marginBottom: 12,
   },
-  sprintIconCircle: {
-    width: 28,
-    height: 28,
-    borderRadius: 9,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 10,
-  },
   sprintTitle: {
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: '700',
     letterSpacing: -0.2,
   },
   sprintSubtitle: {
-    fontSize: 12,
+    fontSize: 11,
     marginTop: 1,
   },
   manageText: {
     fontSize: 12,
-    fontWeight: '600',
+    fontWeight: '700',
   },
   sprintStatsGrid: {
     flexDirection: 'row',
@@ -302,7 +288,7 @@ const styles = StyleSheet.create({
   statBox: {
     flex: 1,
     padding: 10,
-    borderRadius: 12,
+    borderRadius: 10,
     alignItems: 'center',
   },
   statLabel: {
@@ -319,7 +305,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 10,
-    borderRadius: 12,
+    borderRadius: 10,
     marginTop: 4,
     borderWidth: 1,
   },
@@ -332,10 +318,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-around',
     marginHorizontal: 20,
-    paddingVertical: 10,
+    paddingVertical: 11,
     paddingHorizontal: 16,
     borderRadius: 14,
     borderWidth: 1,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+    elevation: 1,
   },
   telemetryItem: {
     flexDirection: 'row',
@@ -344,7 +334,7 @@ const styles = StyleSheet.create({
   },
   telemetryText: {
     fontSize: 11,
-    fontWeight: '500',
+    fontWeight: '600',
   },
   telemetryDivider: {
     width: 1,

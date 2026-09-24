@@ -22,14 +22,14 @@ export const WeightGauge: React.FC = () => {
         },
       ]}
     >
-      {/* Top Header Row */}
+      {/* Header Row */}
       <View style={styles.headerRow}>
         <View>
-          <Text style={[styles.cardTitle, { color: theme.textSecondary }]}>
-            Bowl Scale
+          <Text style={[styles.eyebrow, { color: theme.textMuted }]}>
+            TELEMETRY • HX711
           </Text>
-          <Text style={[styles.cardSubtitle, { color: theme.textMuted }]}>
-            Real-time closed-loop telemetry
+          <Text style={[styles.cardTitle, { color: theme.textPrimary }]}>
+            Bowl Weight
           </Text>
         </View>
 
@@ -45,20 +45,20 @@ export const WeightGauge: React.FC = () => {
           disabled={isDispensing}
           activeOpacity={0.7}
         >
-          <Ionicons name="scale-outline" size={14} color={theme.accentSage} style={{ marginRight: 4 }} />
-          <Text style={[styles.tareText, { color: theme.accentSage }]}>Tare</Text>
+          <Ionicons name="scale-outline" size={13} color={theme.textSecondary} style={{ marginRight: 4 }} />
+          <Text style={[styles.tareText, { color: theme.textSecondary }]}>Tare</Text>
         </TouchableOpacity>
       </View>
 
       {/* Main Circular Dial Instrument */}
       <View style={styles.gaugeContainer}>
-        {/* Subtle Outer Instrument Ring */}
+        {/* Outer Instrument Ring */}
         <View
           style={[
             styles.outerDial,
             {
               borderColor: isDispensing ? theme.accentClay : theme.border,
-              backgroundColor: isDispensing ? theme.accentClayTint : theme.primaryTint,
+              backgroundColor: isDispensing ? theme.accentClayTint : theme.surfaceLight,
             },
           ]}
         >
@@ -67,7 +67,8 @@ export const WeightGauge: React.FC = () => {
             style={[
               styles.innerDial,
               {
-                backgroundColor: theme.surfaceLight,
+                backgroundColor: theme.surface,
+                borderColor: theme.borderLight,
                 shadowColor: theme.cardShadow,
               },
             ]}
@@ -96,7 +97,7 @@ export const WeightGauge: React.FC = () => {
                   style={[
                     styles.servoPill,
                     {
-                      backgroundColor: theme.surface,
+                      backgroundColor: theme.surfaceLight,
                       borderColor: theme.borderLight,
                     },
                   ]}
@@ -120,11 +121,11 @@ export const WeightGauge: React.FC = () => {
         </View>
       </View>
 
-      {/* Minimalist Capacity Bar */}
+      {/* Capacity Progress Bar */}
       <View style={styles.capacitySection}>
         <View style={styles.capacityLabels}>
           <Text style={[styles.capacityText, { color: theme.textMuted }]}>
-            Bowl Fill Level
+            Capacity
           </Text>
           <Text style={[styles.capacityValueText, { color: theme.textSecondary }]}>
             {status.weight.toFixed(0)} / {maxCapacity}g ({percentage.toFixed(0)}%)
@@ -141,7 +142,11 @@ export const WeightGauge: React.FC = () => {
               styles.fill,
               {
                 width: `${percentage}%`,
-                backgroundColor: isDispensing ? theme.accentClay : theme.primaryInteractive,
+                backgroundColor: isDispensing
+                  ? theme.accentClay
+                  : isDark
+                  ? theme.primaryInteractive
+                  : theme.primary,
               },
             ]}
           />
@@ -153,42 +158,44 @@ export const WeightGauge: React.FC = () => {
 
 const styles = StyleSheet.create({
   card: {
-    borderRadius: 22,
+    borderRadius: 20,
     padding: 20,
     marginHorizontal: 20,
     marginTop: 12,
-    marginBottom: 14,
+    marginBottom: 12,
     borderWidth: 1,
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.12,
-    shadowRadius: 12,
-    elevation: 3,
+    shadowOpacity: 0.08,
+    shadowRadius: 16,
+    elevation: 2,
   },
   headerRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 8,
+    alignItems: 'flex-start',
+    marginBottom: 4,
+  },
+  eyebrow: {
+    fontSize: 9,
+    fontWeight: '700',
+    letterSpacing: 1.2,
+    marginBottom: 2,
   },
   cardTitle: {
-    fontSize: 15,
+    fontSize: 16,
     fontWeight: '700',
-    letterSpacing: -0.2,
-  },
-  cardSubtitle: {
-    fontSize: 12,
-    marginTop: 1,
+    letterSpacing: -0.3,
   },
   tareButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 12,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 10,
     borderWidth: 1,
   },
   tareText: {
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '600',
     letterSpacing: 0.2,
   },
@@ -198,25 +205,26 @@ const styles = StyleSheet.create({
     marginVertical: 14,
   },
   outerDial: {
-    width: 200,
-    height: 200,
-    borderRadius: 100,
-    borderWidth: 2,
+    width: 196,
+    height: 196,
+    borderRadius: 98,
+    borderWidth: 1.5,
     alignItems: 'center',
     justifyContent: 'center',
     padding: 6,
   },
   innerDial: {
-    width: 176,
-    height: 176,
-    borderRadius: 88,
+    width: 174,
+    height: 174,
+    borderRadius: 87,
+    borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
     padding: 12,
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
-    elevation: 2,
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 1,
   },
   weightValueRow: {
     flexDirection: 'row',
@@ -224,9 +232,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   weightValue: {
-    fontSize: 48,
+    fontSize: 50,
     fontWeight: '800',
-    letterSpacing: -1.5,
+    letterSpacing: -2,
   },
   weightUnit: {
     fontSize: 16,
@@ -237,20 +245,21 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginTop: 8,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
+    paddingHorizontal: 9,
+    paddingVertical: 3,
+    borderRadius: 10,
     borderWidth: 1,
     gap: 5,
   },
   servoDot: {
-    width: 6,
-    height: 6,
+    width: 5,
+    height: 5,
     borderRadius: 3,
   },
   servoText: {
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: '600',
+    letterSpacing: 0.2,
   },
   dispensingOverlay: {
     alignItems: 'center',
@@ -285,12 +294,12 @@ const styles = StyleSheet.create({
     fontFamily: 'monospace',
   },
   track: {
-    height: 5,
-    borderRadius: 3,
+    height: 4,
+    borderRadius: 2,
     overflow: 'hidden',
   },
   fill: {
     height: '100%',
-    borderRadius: 3,
+    borderRadius: 2,
   },
 });

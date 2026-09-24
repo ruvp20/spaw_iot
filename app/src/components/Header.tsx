@@ -4,7 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../theme/ThemeContext';
 import { useFeeder } from '../context/FeederContext';
 
-export const Header: React.FC<{ title?: string }> = ({ title = 'spaw' }) => {
+export const Header: React.FC = () => {
   const { theme, isDark, toggleTheme } = useTheme();
   const { connectionStatus, isMockMode, feederIp, refreshStatus } = useFeeder();
 
@@ -12,21 +12,21 @@ export const Header: React.FC<{ title?: string }> = ({ title = 'spaw' }) => {
     switch (connectionStatus) {
       case 'mock_mode':
         return {
-          label: 'Demo',
+          label: 'DEMO',
           bg: theme.accentOchreTint,
           color: theme.accentOchre,
           dot: theme.accentOchre,
         };
       case 'connected':
         return {
-          label: 'Online',
+          label: 'ONLINE',
           bg: theme.successTint,
           color: theme.success,
           dot: theme.success,
         };
       case 'connecting':
         return {
-          label: 'Connecting',
+          label: 'SYNCING',
           bg: theme.accentClayTint,
           color: theme.accentClay,
           dot: theme.accentClay,
@@ -34,7 +34,7 @@ export const Header: React.FC<{ title?: string }> = ({ title = 'spaw' }) => {
       case 'disconnected':
       default:
         return {
-          label: 'Offline',
+          label: 'OFFLINE',
           bg: theme.dangerTint,
           color: theme.danger,
           dot: theme.danger,
@@ -50,14 +50,14 @@ export const Header: React.FC<{ title?: string }> = ({ title = 'spaw' }) => {
       <View style={styles.brandGroup}>
         <View style={styles.titleRow}>
           <View style={[styles.brandIcon, { backgroundColor: theme.primaryTint }]}>
-            <Ionicons name="paw" size={16} color={theme.accentSage} />
+            <Ionicons name="paw" size={14} color={isDark ? theme.primaryInteractive : theme.primary} />
           </View>
-          <Text style={[styles.title, { color: theme.textPrimary }]}>{title}</Text>
-          <Text style={[styles.badgeEdition, { color: theme.textMuted }]}>iot</Text>
+          <Text style={[styles.title, { color: theme.textPrimary }]}>SPAW</Text>
+          <View style={[styles.dotSep, { backgroundColor: theme.border }]} />
+          <Text style={[styles.subtitle, { color: theme.textMuted }]}>
+            {isMockMode ? 'SIMULATOR' : feederIp.toUpperCase()}
+          </Text>
         </View>
-        <Text style={[styles.subtitle, { color: theme.textMuted }]}>
-          {isMockMode ? 'Simulated Feeder' : feederIp}
-        </Text>
       </View>
 
       {/* Right Actions: Status Badge & Theme Toggle */}
@@ -74,15 +74,21 @@ export const Header: React.FC<{ title?: string }> = ({ title = 'spaw' }) => {
 
         {/* Theme Toggle Button */}
         <TouchableOpacity
-          style={[styles.themeBtn, { backgroundColor: theme.surfaceLight, borderColor: theme.borderLight }]}
+          style={[
+            styles.themeBtn,
+            {
+              backgroundColor: theme.surface,
+              borderColor: theme.border,
+            },
+          ]}
           onPress={toggleTheme}
           activeOpacity={0.7}
           accessibilityLabel="Toggle Theme"
         >
           <Ionicons
-            name={isDark ? 'sunny-outline' : 'moon-outline'}
-            size={16}
-            color={isDark ? theme.accentOchre : theme.primary}
+            name={isDark ? 'sunny' : 'moon'}
+            size={14}
+            color={isDark ? theme.accentOchre : theme.textSecondary}
           />
         </TouchableOpacity>
       </View>
@@ -96,8 +102,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 20,
-    paddingTop: 14,
-    paddingBottom: 14,
+    paddingTop: 12,
+    paddingBottom: 12,
     borderBottomWidth: 1,
   },
   brandGroup: {
@@ -106,32 +112,30 @@ const styles = StyleSheet.create({
   titleRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: 8,
   },
   brandIcon: {
-    width: 26,
-    height: 26,
-    borderRadius: 8,
+    width: 24,
+    height: 24,
+    borderRadius: 7,
     alignItems: 'center',
     justifyContent: 'center',
   },
   title: {
-    fontSize: 20,
-    fontWeight: '700',
-    letterSpacing: -0.5,
+    fontSize: 16,
+    fontWeight: '800',
+    letterSpacing: 1.5,
   },
-  badgeEdition: {
-    fontSize: 11,
-    fontWeight: '600',
-    letterSpacing: 0.5,
-    textTransform: 'uppercase',
-    marginTop: 2,
+  dotSep: {
+    width: 3,
+    height: 3,
+    borderRadius: 2,
   },
   subtitle: {
-    fontSize: 11,
-    marginTop: 1,
+    fontSize: 10,
+    fontWeight: '600',
     fontFamily: 'monospace',
-    letterSpacing: -0.2,
+    letterSpacing: 0.8,
   },
   actionGroup: {
     flexDirection: 'row',
@@ -141,26 +145,26 @@ const styles = StyleSheet.create({
   statusPill: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 14,
+    paddingHorizontal: 9,
+    paddingVertical: 4,
+    borderRadius: 12,
     borderWidth: 1,
     gap: 5,
   },
   statusDot: {
-    width: 6,
-    height: 6,
+    width: 5,
+    height: 5,
     borderRadius: 3,
   },
   statusLabel: {
-    fontSize: 11,
-    fontWeight: '600',
-    letterSpacing: 0.3,
+    fontSize: 10,
+    fontWeight: '700',
+    letterSpacing: 0.6,
   },
   themeBtn: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+    width: 30,
+    height: 30,
+    borderRadius: 15,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,

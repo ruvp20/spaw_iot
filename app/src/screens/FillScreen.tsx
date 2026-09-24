@@ -5,7 +5,7 @@ import { useTheme } from '../theme/ThemeContext';
 import { useFeeder } from '../context/FeederContext';
 
 export const FillScreen: React.FC = () => {
-  const { theme } = useTheme();
+  const { theme, isDark } = useTheme();
   const { status, isDispensing, dispenseStage, dispenseFood, lastResult } = useFeeder();
   const [fillTarget, setFillTarget] = useState<number>(250);
 
@@ -40,14 +40,21 @@ export const FillScreen: React.FC = () => {
         ]}
       >
         <View style={[styles.bannerIcon, { backgroundColor: theme.primaryTint }]}>
-          <Ionicons name="water" size={20} color={theme.primaryInteractive} />
+          <Ionicons
+            name="water"
+            size={18}
+            color={isDark ? theme.primaryInteractive : theme.primary}
+          />
         </View>
         <View style={{ flex: 1 }}>
+          <Text style={[styles.eyebrow, { color: theme.textMuted }]}>
+            CLOSED-LOOP OPERATION
+          </Text>
           <Text style={[styles.bannerTitle, { color: theme.textPrimary }]}>
             Bowl Fill
           </Text>
-          <Text style={[styles.bannerSubtitle, { color: theme.textMuted }]}>
-            Closed-loop bulk pour with dynamic gate throttling.
+          <Text style={[styles.bannerSubtitle, { color: theme.textSecondary }]}>
+            Real-time weight cutoff prevents kinetic kibble overshoot.
           </Text>
         </View>
       </View>
@@ -63,8 +70,8 @@ export const FillScreen: React.FC = () => {
           },
         ]}
       >
-        <Text style={[styles.cardHeader, { color: theme.textSecondary }]}>
-          Target Weight
+        <Text style={[styles.eyebrow, { color: theme.textMuted }]}>
+          TARGET BOWL CAPACITY
         </Text>
 
         {/* Stepper Controls */}
@@ -81,7 +88,7 @@ export const FillScreen: React.FC = () => {
             disabled={isDispensing || fillTarget <= 100}
             activeOpacity={0.7}
           >
-            <Ionicons name="remove" size={20} color={theme.textPrimary} />
+            <Ionicons name="remove" size={18} color={theme.textPrimary} />
           </TouchableOpacity>
 
           <View style={styles.targetDisplay}>
@@ -92,7 +99,7 @@ export const FillScreen: React.FC = () => {
               <Text style={[styles.targetUnit, { color: theme.textMuted }]}>g</Text>
             </View>
             <Text style={[styles.targetGramsLabel, { color: theme.textMuted }]}>
-              Target capacity
+              Gram Target
             </Text>
           </View>
 
@@ -108,37 +115,48 @@ export const FillScreen: React.FC = () => {
             disabled={isDispensing || fillTarget >= 350}
             activeOpacity={0.7}
           >
-            <Ionicons name="add" size={20} color={theme.textPrimary} />
+            <Ionicons name="add" size={18} color={theme.textPrimary} />
           </TouchableOpacity>
         </View>
 
         {/* Quick Target Presets */}
         <View style={styles.presetsRow}>
-          {presets.map((val) => (
-            <TouchableOpacity
-              key={val}
-              style={[
-                styles.presetChip,
-                {
-                  backgroundColor: fillTarget === val ? theme.primaryTint : theme.surfaceLight,
-                  borderColor: fillTarget === val ? theme.primaryInteractive : theme.borderLight,
-                },
-              ]}
-              onPress={() => setFillTarget(val)}
-              disabled={isDispensing}
-            >
-              <Text
+          {presets.map((val) => {
+            const isSelected = fillTarget === val;
+            return (
+              <TouchableOpacity
+                key={val}
                 style={[
-                  styles.presetChipText,
+                  styles.presetChip,
                   {
-                    color: fillTarget === val ? theme.primaryInteractive : theme.textSecondary,
+                    backgroundColor: isSelected ? theme.primaryTint : theme.surfaceLight,
+                    borderColor: isSelected
+                      ? isDark
+                        ? theme.primaryInteractive
+                        : theme.primary
+                      : theme.borderLight,
                   },
                 ]}
+                onPress={() => setFillTarget(val)}
+                disabled={isDispensing}
               >
-                {val}g
-              </Text>
-            </TouchableOpacity>
-          ))}
+                <Text
+                  style={[
+                    styles.presetChipText,
+                    {
+                      color: isSelected
+                        ? isDark
+                          ? theme.primaryInteractive
+                          : theme.primary
+                        : theme.textSecondary,
+                    },
+                  ]}
+                >
+                  {val}g
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
         </View>
       </View>
 
@@ -159,18 +177,21 @@ export const FillScreen: React.FC = () => {
               {dispenseStage}
             </Text>
             <Text style={[styles.currentBowlWeight, { color: theme.textSecondary }]}>
-              Scale: {status.weight.toFixed(1)}g / {fillTarget}g target
+              Live: {status.weight.toFixed(1)}g / {fillTarget}g target
             </Text>
           </View>
         ) : (
           <>
             <TouchableOpacity
-              style={[styles.fillButton, { backgroundColor: theme.primaryInteractive }]}
+              style={[
+                styles.fillButton,
+                { backgroundColor: isDark ? theme.primaryInteractive : theme.primary },
+              ]}
               onPress={handleStartFill}
               activeOpacity={0.8}
             >
-              <Ionicons name="play" size={16} color="#FFF" style={{ marginRight: 6 }} />
-              <Text style={styles.fillButtonText}>Start {fillTarget}g Fill</Text>
+              <Ionicons name="water" size={15} color="#FFF" style={{ marginRight: 6 }} />
+              <Text style={styles.fillButtonText}>Execute {fillTarget}g Fill</Text>
             </TouchableOpacity>
 
             {lastResult && lastResult.status === 'success' && (
@@ -185,12 +206,12 @@ export const FillScreen: React.FC = () => {
               >
                 <Ionicons
                   name="checkmark-circle"
-                  size={16}
+                  size={15}
                   color={theme.success}
                   style={{ marginRight: 6 }}
                 />
                 <Text style={[styles.resultText, { color: theme.success }]}>
-                  Last fill: {lastResult.actualGrams}g delivered (Target: {lastResult.targetGrams}g)
+                  Last fill: {lastResult.actualGrams}g delivered ({lastResult.targetGrams}g target)
                 </Text>
               </View>
             )}
@@ -208,18 +229,30 @@ export const FillScreen: React.FC = () => {
           },
         ]}
       >
-        <Text style={[styles.stepsTitle, { color: theme.textSecondary }]}>
-          Closed-Loop Sequence
+        <Text style={[styles.eyebrow, { color: theme.textMuted }]}>
+          PROCESS AUTOMATION
+        </Text>
+        <Text style={[styles.stepsTitle, { color: theme.textPrimary }]}>
+          Staged Dispensing Sequence
         </Text>
 
         <View style={styles.stepItem}>
           <View style={[styles.stepNumberBadge, { backgroundColor: theme.surfaceLight }]}>
-            <Text style={[styles.stepNum, { color: theme.accentSage }]}>1</Text>
+            <Text
+              style={[
+                styles.stepNum,
+                { color: isDark ? theme.primaryInteractive : theme.primary },
+              ]}
+            >
+              01
+            </Text>
           </View>
           <View style={styles.stepContent}>
-            <Text style={[styles.stepHeading, { color: theme.textPrimary }]}>Zero Load Cell</Text>
-            <Text style={[styles.stepDesc, { color: theme.textMuted }]}>
-              HX711 tares out bowl tare and residual food particles.
+            <Text style={[styles.stepHeading, { color: theme.textPrimary }]}>
+              Zero Baseline Tare
+            </Text>
+            <Text style={[styles.stepDesc, { color: theme.textSecondary }]}>
+              The HX711 strain gauge zeros out existing bowl tare and food particles.
             </Text>
           </View>
         </View>
@@ -228,14 +261,21 @@ export const FillScreen: React.FC = () => {
 
         <View style={styles.stepItem}>
           <View style={[styles.stepNumberBadge, { backgroundColor: theme.surfaceLight }]}>
-            <Text style={[styles.stepNum, { color: theme.accentSage }]}>2</Text>
+            <Text
+              style={[
+                styles.stepNum,
+                { color: isDark ? theme.primaryInteractive : theme.primary },
+              ]}
+            >
+              02
+            </Text>
           </View>
           <View style={styles.stepContent}>
             <Text style={[styles.stepHeading, { color: theme.textPrimary }]}>
               Bulk Pour & Gate Throttling
             </Text>
-            <Text style={[styles.stepDesc, { color: theme.textMuted }]}>
-              MG996R gate opens to 95°, then throttles to partial flow near cutoff.
+            <Text style={[styles.stepDesc, { color: theme.textSecondary }]}>
+              MG996R gate opens to 95°, then throttles to partial flow at 85% capacity.
             </Text>
           </View>
         </View>
@@ -244,14 +284,21 @@ export const FillScreen: React.FC = () => {
 
         <View style={styles.stepItem}>
           <View style={[styles.stepNumberBadge, { backgroundColor: theme.surfaceLight }]}>
-            <Text style={[styles.stepNum, { color: theme.accentSage }]}>3</Text>
+            <Text
+              style={[
+                styles.stepNum,
+                { color: isDark ? theme.primaryInteractive : theme.primary },
+              ]}
+            >
+              03
+            </Text>
           </View>
           <View style={styles.stepContent}>
             <Text style={[styles.stepHeading, { color: theme.textPrimary }]}>
               Snap Shut & Settle
             </Text>
-            <Text style={[styles.stepDesc, { color: theme.textMuted }]}>
-              Gate snaps closed at exact target, pauses 300ms to record settled weight.
+            <Text style={[styles.stepDesc, { color: theme.textSecondary }]}>
+              Gate snaps shut at exact cutoff, pauses 300ms to record settled weight.
             </Text>
           </View>
         </View>
@@ -269,20 +316,26 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderRadius: 20,
     padding: 16,
-    marginBottom: 14,
+    marginBottom: 12,
     borderWidth: 1,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 16,
     elevation: 2,
   },
   bannerIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 12,
+    width: 36,
+    height: 36,
+    borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 12,
+  },
+  eyebrow: {
+    fontSize: 9,
+    fontWeight: '700',
+    letterSpacing: 1.2,
+    marginBottom: 2,
   },
   bannerTitle: {
     fontSize: 16,
@@ -290,37 +343,32 @@ const styles = StyleSheet.create({
     letterSpacing: -0.2,
   },
   bannerSubtitle: {
-    fontSize: 12,
-    marginTop: 2,
-    lineHeight: 16,
+    fontSize: 11,
+    marginTop: 1,
+    lineHeight: 15,
   },
   targetCard: {
-    borderRadius: 22,
+    borderRadius: 20,
     padding: 20,
-    marginBottom: 14,
+    marginBottom: 12,
     alignItems: 'center',
     borderWidth: 1,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 16,
     elevation: 2,
-  },
-  cardHeader: {
-    fontSize: 14,
-    fontWeight: '700',
-    letterSpacing: -0.2,
-    marginBottom: 14,
   },
   adjusterRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 20,
+    marginVertical: 10,
   },
   adjustBtn: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+    width: 42,
+    height: 42,
+    borderRadius: 21,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
@@ -334,7 +382,7 @@ const styles = StyleSheet.create({
     alignItems: 'baseline',
   },
   targetNumber: {
-    fontSize: 48,
+    fontSize: 46,
     fontWeight: '800',
     letterSpacing: -1,
   },
@@ -344,19 +392,19 @@ const styles = StyleSheet.create({
     marginLeft: 3,
   },
   targetGramsLabel: {
-    fontSize: 11,
-    marginTop: 2,
+    fontSize: 10,
+    marginTop: 1,
     fontWeight: '500',
   },
   presetsRow: {
     flexDirection: 'row',
     gap: 8,
-    marginTop: 18,
+    marginTop: 14,
     width: '100%',
   },
   presetChip: {
     flex: 1,
-    paddingVertical: 8,
+    paddingVertical: 7,
     borderRadius: 10,
     alignItems: 'center',
     borderWidth: 1,
@@ -366,48 +414,48 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   actionCard: {
-    marginBottom: 14,
+    marginBottom: 12,
   },
   fillButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 16,
+    paddingVertical: 15,
     borderRadius: 16,
   },
   fillButtonText: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '700',
     color: '#FFF',
-    letterSpacing: 0.3,
+    letterSpacing: 0.2,
   },
   dispensingBox: {
-    borderRadius: 18,
-    padding: 20,
+    borderRadius: 16,
+    padding: 18,
     alignItems: 'center',
     borderWidth: 1,
   },
   dispenseStage: {
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: '600',
     marginBottom: 4,
     textAlign: 'center',
   },
   currentBowlWeight: {
-    fontSize: 12,
+    fontSize: 11,
     fontFamily: 'monospace',
   },
   resultBox: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 12,
-    padding: 10,
-    marginTop: 10,
+    borderRadius: 10,
+    padding: 9,
+    marginTop: 8,
     borderWidth: 1,
   },
   resultText: {
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '600',
   },
   stepsCard: {
@@ -416,7 +464,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   stepsTitle: {
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: '700',
     marginBottom: 14,
   },
@@ -425,17 +473,18 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
   },
   stepNumberBadge: {
-    width: 22,
-    height: 22,
-    borderRadius: 11,
+    width: 24,
+    height: 24,
+    borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 12,
     marginTop: 1,
   },
   stepNum: {
-    fontSize: 11,
-    fontWeight: '700',
+    fontSize: 10,
+    fontWeight: '800',
+    fontFamily: 'monospace',
   },
   stepContent: {
     flex: 1,
@@ -450,9 +499,9 @@ const styles = StyleSheet.create({
     lineHeight: 15,
   },
   stepDivider: {
-    height: 12,
-    marginLeft: 10,
+    height: 10,
+    marginLeft: 12,
     borderLeftWidth: 1,
-    marginVertical: 4,
+    marginVertical: 3,
   },
 });

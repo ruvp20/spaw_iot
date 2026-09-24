@@ -5,7 +5,7 @@ import { useTheme } from '../theme/ThemeContext';
 import { useFeeder } from '../context/FeederContext';
 
 export const SprintScreen: React.FC = () => {
-  const { theme } = useTheme();
+  const { theme, isDark } = useTheme();
   const { sprint, saveSprint, cancelSprint } = useFeeder();
 
   const [grams, setGrams] = useState<number>(sprint.grams || 50);
@@ -64,14 +64,17 @@ export const SprintScreen: React.FC = () => {
         >
           <View style={styles.activeHeader}>
             <View style={[styles.activeIconCircle, { backgroundColor: theme.accentOchreTint }]}>
-              <Ionicons name="time" size={16} color={theme.accentOchre} />
+              <Ionicons name="time" size={15} color={theme.accentOchre} />
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={[styles.activeTitle, { color: theme.textPrimary }]}>
-                Active Schedule
+              <Text style={[styles.eyebrow, { color: theme.textMuted }]}>
+                RECURRING CYCLE ACTIVE
               </Text>
-              <Text style={[styles.activeSubtitle, { color: theme.textMuted }]}>
-                {sprint.grams}g every {sprint.intervalHours}h ({sprint.completedFeeds} of {sprint.totalFeeds} delivered)
+              <Text style={[styles.activeTitle, { color: theme.textPrimary }]}>
+                {sprint.grams}g every {sprint.intervalHours} hours
+              </Text>
+              <Text style={[styles.activeSubtitle, { color: theme.textSecondary }]}>
+                {sprint.completedFeeds} of {sprint.totalFeeds} completed
               </Text>
             </View>
           </View>
@@ -104,9 +107,9 @@ export const SprintScreen: React.FC = () => {
             onPress={handleCancelSprint}
             activeOpacity={0.8}
           >
-            <Ionicons name="close-circle-outline" size={16} color={theme.danger} style={{ marginRight: 6 }} />
+            <Ionicons name="close-circle-outline" size={15} color={theme.danger} style={{ marginRight: 6 }} />
             <Text style={[styles.cancelText, { color: theme.danger }]}>
-              Cancel Active Schedule
+              Cancel Recurring Schedule
             </Text>
           </TouchableOpacity>
         </View>
@@ -123,117 +126,156 @@ export const SprintScreen: React.FC = () => {
           },
         ]}
       >
-        <Text style={[styles.sectionTitle, { color: theme.textPrimary }]}>
-          Schedule Settings
+        <Text style={[styles.eyebrow, { color: theme.textMuted }]}>
+          AUTONOMOUS DISPENSER
         </Text>
-        <Text style={[styles.sectionDesc, { color: theme.textMuted }]}>
-          Feeds execute automatically on the ESP32 RTC clock without needing your phone online.
+        <Text style={[styles.sectionTitle, { color: theme.textPrimary }]}>
+          Schedule Configuration
+        </Text>
+        <Text style={[styles.sectionDesc, { color: theme.textSecondary }]}>
+          The ESP32 runs this schedule autonomously via real-time clock without requiring active phone connection.
         </Text>
 
         {/* Portion Selector */}
-        <Text style={[styles.fieldLabel, { color: theme.textSecondary }]}>
-          Food Portion per Feed
+        <Text style={[styles.fieldLabel, { color: theme.textMuted }]}>
+          PORTION SIZE (GRAMS)
         </Text>
         <View style={styles.quickGramsRow}>
-          {[25, 40, 50, 65, 80].map((val) => (
-            <TouchableOpacity
-              key={val}
-              style={[
-                styles.pillBtn,
-                {
-                  backgroundColor: grams === val ? theme.primaryTint : theme.surfaceLight,
-                  borderColor: grams === val ? theme.primaryInteractive : theme.borderLight,
-                },
-              ]}
-              onPress={() => setGrams(val)}
-            >
-              <Text
+          {[25, 40, 50, 65, 80].map((val) => {
+            const isSelected = grams === val;
+            return (
+              <TouchableOpacity
+                key={val}
                 style={[
-                  styles.pillText,
+                  styles.pillBtn,
                   {
-                    color: grams === val ? theme.primaryInteractive : theme.textSecondary,
-                    fontWeight: grams === val ? '700' : '500',
+                    backgroundColor: isSelected ? theme.primaryTint : theme.surfaceLight,
+                    borderColor: isSelected
+                      ? isDark
+                        ? theme.primaryInteractive
+                        : theme.primary
+                      : theme.borderLight,
                   },
                 ]}
+                onPress={() => setGrams(val)}
               >
-                {val}g
-              </Text>
-            </TouchableOpacity>
-          ))}
+                <Text
+                  style={[
+                    styles.pillText,
+                    {
+                      color: isSelected
+                        ? isDark
+                          ? theme.primaryInteractive
+                          : theme.primary
+                        : theme.textSecondary,
+                      fontWeight: isSelected ? '700' : '500',
+                    },
+                  ]}
+                >
+                  {val}g
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
         </View>
 
         {/* Interval Selector */}
-        <Text style={[styles.fieldLabel, { color: theme.textSecondary }]}>
-          Interval Between Feeds
+        <Text style={[styles.fieldLabel, { color: theme.textMuted }]}>
+          INTERVAL BETWEEN DISPENSES
         </Text>
         <View style={styles.quickGramsRow}>
-          {intervalOptions.map((val) => (
-            <TouchableOpacity
-              key={val}
-              style={[
-                styles.pillBtn,
-                {
-                  backgroundColor: intervalHours === val ? theme.primaryTint : theme.surfaceLight,
-                  borderColor: intervalHours === val ? theme.primaryInteractive : theme.borderLight,
-                },
-              ]}
-              onPress={() => setIntervalHours(val)}
-            >
-              <Text
+          {intervalOptions.map((val) => {
+            const isSelected = intervalHours === val;
+            return (
+              <TouchableOpacity
+                key={val}
                 style={[
-                  styles.pillText,
+                  styles.pillBtn,
                   {
-                    color: intervalHours === val ? theme.primaryInteractive : theme.textSecondary,
-                    fontWeight: intervalHours === val ? '700' : '500',
+                    backgroundColor: isSelected ? theme.primaryTint : theme.surfaceLight,
+                    borderColor: isSelected
+                      ? isDark
+                        ? theme.primaryInteractive
+                        : theme.primary
+                      : theme.borderLight,
                   },
                 ]}
+                onPress={() => setIntervalHours(val)}
               >
-                {val}h
-              </Text>
-            </TouchableOpacity>
-          ))}
+                <Text
+                  style={[
+                    styles.pillText,
+                    {
+                      color: isSelected
+                        ? isDark
+                          ? theme.primaryInteractive
+                          : theme.primary
+                        : theme.textSecondary,
+                      fontWeight: isSelected ? '700' : '500',
+                    },
+                  ]}
+                >
+                  {val}h
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
         </View>
 
         {/* Total Feeds Selector */}
-        <Text style={[styles.fieldLabel, { color: theme.textSecondary }]}>
-          Number of Feeds
+        <Text style={[styles.fieldLabel, { color: theme.textMuted }]}>
+          TOTAL DISPENSE CYCLES
         </Text>
         <View style={styles.quickGramsRow}>
-          {countOptions.map((val) => (
-            <TouchableOpacity
-              key={val}
-              style={[
-                styles.pillBtn,
-                {
-                  backgroundColor: totalFeeds === val ? theme.primaryTint : theme.surfaceLight,
-                  borderColor: totalFeeds === val ? theme.primaryInteractive : theme.borderLight,
-                },
-              ]}
-              onPress={() => setTotalFeeds(val)}
-            >
-              <Text
+          {countOptions.map((val) => {
+            const isSelected = totalFeeds === val;
+            return (
+              <TouchableOpacity
+                key={val}
                 style={[
-                  styles.pillText,
+                  styles.pillBtn,
                   {
-                    color: totalFeeds === val ? theme.primaryInteractive : theme.textSecondary,
-                    fontWeight: totalFeeds === val ? '700' : '500',
+                    backgroundColor: isSelected ? theme.primaryTint : theme.surfaceLight,
+                    borderColor: isSelected
+                      ? isDark
+                        ? theme.primaryInteractive
+                        : theme.primary
+                      : theme.borderLight,
                   },
                 ]}
+                onPress={() => setTotalFeeds(val)}
               >
-                {val}x
-              </Text>
-            </TouchableOpacity>
-          ))}
+                <Text
+                  style={[
+                    styles.pillText,
+                    {
+                      color: isSelected
+                        ? isDark
+                          ? theme.primaryInteractive
+                          : theme.primary
+                        : theme.textSecondary,
+                      fontWeight: isSelected ? '700' : '500',
+                    },
+                  ]}
+                >
+                  {val}x
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
         </View>
 
         {/* Start / Update Button */}
         <TouchableOpacity
-          style={[styles.saveBtn, { backgroundColor: theme.primaryInteractive }]}
+          style={[
+            styles.saveBtn,
+            { backgroundColor: isDark ? theme.primaryInteractive : theme.primary },
+          ]}
           onPress={handleStartSprint}
           disabled={isSaving}
           activeOpacity={0.8}
         >
-          <Ionicons name="calendar-outline" size={18} color="#FFF" style={{ marginRight: 6 }} />
+          <Ionicons name="calendar-outline" size={16} color="#FFF" style={{ marginRight: 6 }} />
           <Text style={styles.saveBtnText}>
             {sprint.enabled ? 'Update Schedule' : 'Start Schedule'}
           </Text>
@@ -250,8 +292,11 @@ export const SprintScreen: React.FC = () => {
           },
         ]}
       >
-        <Text style={[styles.timelineTitle, { color: theme.textSecondary }]}>
-          Estimated Timeline
+        <Text style={[styles.eyebrow, { color: theme.textMuted }]}>
+          FORECAST
+        </Text>
+        <Text style={[styles.timelineTitle, { color: theme.textPrimary }]}>
+          Calculated Timeline
         </Text>
         {timeline.map((item, idx) => (
           <View
@@ -262,14 +307,24 @@ export const SprintScreen: React.FC = () => {
               idx === timeline.length - 1 && { borderBottomWidth: 0 },
             ]}
           >
-            <View style={[styles.timelineDot, { backgroundColor: theme.accentSage }]} />
+            <View
+              style={[
+                styles.timelineDot,
+                { backgroundColor: isDark ? theme.primaryInteractive : theme.primary },
+              ]}
+            />
             <Text style={[styles.timelineFeedName, { color: theme.textPrimary }]}>
               Feed #{item.num}
             </Text>
             <Text style={[styles.timelineGrams, { color: theme.textMuted }]}>
               {grams}g
             </Text>
-            <Text style={[styles.timelineTime, { color: theme.accentSage }]}>
+            <Text
+              style={[
+                styles.timelineTime,
+                { color: isDark ? theme.primaryInteractive : theme.primary },
+              ]}
+            >
               {item.time}
             </Text>
           </View>
@@ -286,11 +341,11 @@ const styles = StyleSheet.create({
   activeCard: {
     borderRadius: 20,
     padding: 18,
-    marginBottom: 14,
+    marginBottom: 12,
     borderWidth: 1,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 16,
     elevation: 2,
   },
   activeHeader: {
@@ -306,13 +361,19 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginRight: 10,
   },
+  eyebrow: {
+    fontSize: 9,
+    fontWeight: '700',
+    letterSpacing: 1.2,
+    marginBottom: 2,
+  },
   activeTitle: {
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: '700',
   },
   activeSubtitle: {
     fontSize: 12,
-    marginTop: 2,
+    marginTop: 1,
   },
   activeProgressRow: {
     flexDirection: 'row',
@@ -322,7 +383,7 @@ const styles = StyleSheet.create({
   },
   progressTrack: {
     flex: 1,
-    height: 6,
+    height: 5,
     borderRadius: 3,
     overflow: 'hidden',
   },
@@ -341,7 +402,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginTop: 12,
     paddingVertical: 10,
-    borderRadius: 12,
+    borderRadius: 10,
     borderWidth: 1,
   },
   cancelText: {
@@ -349,40 +410,41 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   card: {
-    borderRadius: 22,
+    borderRadius: 20,
     padding: 20,
-    marginBottom: 14,
+    marginBottom: 12,
     borderWidth: 1,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 16,
     elevation: 2,
   },
   sectionTitle: {
-    fontSize: 15,
+    fontSize: 16,
     fontWeight: '700',
     letterSpacing: -0.2,
   },
   sectionDesc: {
-    fontSize: 12,
-    marginTop: 3,
-    marginBottom: 16,
-    lineHeight: 16,
+    fontSize: 11,
+    marginTop: 2,
+    marginBottom: 14,
+    lineHeight: 15,
   },
   fieldLabel: {
-    fontSize: 12,
-    fontWeight: '600',
-    marginBottom: 8,
+    fontSize: 9,
+    fontWeight: '700',
+    letterSpacing: 1,
+    marginBottom: 6,
     marginTop: 6,
   },
   quickGramsRow: {
     flexDirection: 'row',
     gap: 8,
-    marginBottom: 14,
+    marginBottom: 12,
   },
   pillBtn: {
     flex: 1,
-    paddingVertical: 9,
+    paddingVertical: 8,
     borderRadius: 10,
     alignItems: 'center',
     borderWidth: 1,
@@ -394,12 +456,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 15,
-    borderRadius: 16,
+    paddingVertical: 14,
+    borderRadius: 14,
     marginTop: 8,
   },
   saveBtnText: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: '700',
     color: '#FFF',
     letterSpacing: 0.2,
@@ -410,7 +472,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   timelineTitle: {
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: '700',
     marginBottom: 10,
   },
@@ -421,8 +483,8 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
   },
   timelineDot: {
-    width: 6,
-    height: 6,
+    width: 5,
+    height: 5,
     borderRadius: 3,
     marginRight: 10,
   },

@@ -6,29 +6,29 @@ import { useFeeder } from '../context/FeederContext';
 import { HistoryRecord } from '../types';
 
 export const HistoryScreen: React.FC = () => {
-  const { theme } = useTheme();
+  const { theme, isDark } = useTheme();
   const { history, refreshStatus } = useFeeder();
 
   const getTypeBadge = (type: string) => {
     switch (type) {
       case 'scheduled':
         return {
-          label: 'Scheduled',
+          label: 'SCHEDULED',
           bg: theme.accentOchreTint,
           color: theme.accentOchre,
           icon: 'calendar-outline',
         };
       case 'fill':
         return {
-          label: 'Fill 250g',
+          label: 'FILL 250g',
           bg: theme.primaryTint,
-          color: theme.primaryInteractive,
+          color: isDark ? theme.primaryInteractive : theme.primary,
           icon: 'water-outline',
         };
       case 'manual':
       default:
         return {
-          label: 'Manual',
+          label: 'MANUAL',
           bg: theme.accentSageTint,
           color: theme.accentSage,
           icon: 'hand-left-outline',
@@ -57,7 +57,7 @@ export const HistoryScreen: React.FC = () => {
           <View style={[styles.typeBadge, { backgroundColor: typeInfo.bg }]}>
             <Ionicons
               name={typeInfo.icon as any}
-              size={12}
+              size={11}
               color={typeInfo.color}
               style={{ marginRight: 4 }}
             />
@@ -72,7 +72,7 @@ export const HistoryScreen: React.FC = () => {
 
         <View style={styles.weightComparisonRow}>
           <View style={styles.weightBlock}>
-            <Text style={[styles.weightLabel, { color: theme.textMuted }]}>Target</Text>
+            <Text style={[styles.weightLabel, { color: theme.textMuted }]}>TARGET</Text>
             <Text style={[styles.weightGrams, { color: theme.textPrimary }]}>
               {item.targetGrams}g
             </Text>
@@ -80,13 +80,13 @@ export const HistoryScreen: React.FC = () => {
 
           <Ionicons
             name="arrow-forward"
-            size={14}
+            size={12}
             color={theme.border}
             style={{ marginHorizontal: 8 }}
           />
 
           <View style={styles.weightBlock}>
-            <Text style={[styles.weightLabel, { color: theme.textMuted }]}>Delivered</Text>
+            <Text style={[styles.weightLabel, { color: theme.textMuted }]}>DELIVERED</Text>
             <View style={styles.deliveredRow}>
               <Text
                 style={[
@@ -107,14 +107,14 @@ export const HistoryScreen: React.FC = () => {
           <View style={styles.statusIndicator}>
             {isSuccess ? (
               <View style={[styles.statusCapsule, { backgroundColor: theme.successTint }]}>
-                <Ionicons name="checkmark" size={12} color={theme.success} style={{ marginRight: 3 }} />
+                <Ionicons name="checkmark" size={11} color={theme.success} style={{ marginRight: 3 }} />
                 <Text style={[styles.statusTextSuccess, { color: theme.success }]}>
                   OK
                 </Text>
               </View>
             ) : (
               <View style={[styles.statusCapsule, { backgroundColor: theme.dangerTint }]}>
-                <Ionicons name="alert" size={12} color={theme.danger} style={{ marginRight: 3 }} />
+                <Ionicons name="alert" size={11} color={theme.danger} style={{ marginRight: 3 }} />
                 <Text style={[styles.statusTextFail, { color: theme.danger }]}>
                   {item.status}
                 </Text>
@@ -130,11 +130,14 @@ export const HistoryScreen: React.FC = () => {
     <View style={[styles.container, { backgroundColor: theme.background }]}>
       <View style={styles.header}>
         <View>
+          <Text style={[styles.eyebrow, { color: theme.textMuted }]}>
+            AUDIT TELEMETRY
+          </Text>
           <Text style={[styles.headerTitle, { color: theme.textPrimary }]}>
             Feeding History
           </Text>
-          <Text style={[styles.headerSubtitle, { color: theme.textMuted }]}>
-            {history.length} events logged by HX711 load cell
+          <Text style={[styles.headerSubtitle, { color: theme.textSecondary }]}>
+            {history.length} events logged by HX711 strain gauge
           </Text>
         </View>
 
@@ -142,27 +145,27 @@ export const HistoryScreen: React.FC = () => {
           style={[
             styles.refreshBtn,
             {
-              backgroundColor: theme.surfaceLight,
-              borderColor: theme.borderLight,
+              backgroundColor: theme.surface,
+              borderColor: theme.border,
             },
           ]}
           onPress={refreshStatus}
           activeOpacity={0.7}
         >
-          <Ionicons name="refresh-outline" size={16} color={theme.textSecondary} />
+          <Ionicons name="refresh-outline" size={15} color={theme.textSecondary} />
         </TouchableOpacity>
       </View>
 
       {history.length === 0 ? (
         <View style={styles.emptyContainer}>
           <View style={[styles.emptyIconCircle, { backgroundColor: theme.surfaceLight }]}>
-            <Ionicons name="time-outline" size={28} color={theme.textMuted} />
+            <Ionicons name="time-outline" size={24} color={theme.textMuted} />
           </View>
           <Text style={[styles.emptyTitle, { color: theme.textPrimary }]}>
             No Feeding History Yet
           </Text>
           <Text style={[styles.emptySubtitle, { color: theme.textMuted }]}>
-            Dispense meals manually or set up a Sprint schedule to begin recording.
+            Dispense meals manually or set up a recurring schedule to begin logging.
           </Text>
         </View>
       ) : (
@@ -184,11 +187,17 @@ const styles = StyleSheet.create({
   },
   header: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     justifyContent: 'space-between',
     paddingHorizontal: 20,
     paddingTop: 16,
-    paddingBottom: 14,
+    paddingBottom: 12,
+  },
+  eyebrow: {
+    fontSize: 9,
+    fontWeight: '700',
+    letterSpacing: 1.2,
+    marginBottom: 2,
   },
   headerTitle: {
     fontSize: 16,
@@ -196,46 +205,47 @@ const styles = StyleSheet.create({
     letterSpacing: -0.2,
   },
   headerSubtitle: {
-    fontSize: 12,
-    marginTop: 2,
+    fontSize: 11,
+    marginTop: 1,
   },
   refreshBtn: {
-    width: 34,
-    height: 34,
-    borderRadius: 12,
+    width: 32,
+    height: 32,
+    borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
   },
   historyCard: {
-    borderRadius: 18,
-    padding: 16,
-    marginBottom: 10,
+    borderRadius: 16,
+    padding: 14,
+    marginBottom: 9,
     borderWidth: 1,
-    shadowOffset: { width: 0, height: 1 },
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.04,
-    shadowRadius: 6,
+    shadowRadius: 8,
     elevation: 1,
   },
   cardTopRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 10,
+    marginBottom: 8,
   },
   typeBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 8,
+    paddingHorizontal: 7,
     paddingVertical: 3,
-    borderRadius: 8,
+    borderRadius: 6,
   },
   typeText: {
-    fontSize: 11,
-    fontWeight: '600',
+    fontSize: 9,
+    fontWeight: '700',
+    letterSpacing: 0.4,
   },
   timestampText: {
-    fontSize: 11,
+    fontSize: 10,
     fontFamily: 'monospace',
   },
   weightComparisonRow: {
@@ -246,11 +256,13 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   weightLabel: {
-    fontSize: 10,
+    fontSize: 8,
+    fontWeight: '700',
+    letterSpacing: 0.8,
     marginBottom: 2,
   },
   weightGrams: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '700',
   },
   deliveredRow: {
@@ -259,7 +271,7 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   varianceText: {
-    fontSize: 11,
+    fontSize: 10,
     fontFamily: 'monospace',
   },
   statusIndicator: {
@@ -268,17 +280,17 @@ const styles = StyleSheet.create({
   statusCapsule: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 8,
+    paddingHorizontal: 7,
+    paddingVertical: 2,
+    borderRadius: 6,
   },
   statusTextSuccess: {
-    fontSize: 10,
-    fontWeight: '700',
+    fontSize: 9,
+    fontWeight: '800',
   },
   statusTextFail: {
-    fontSize: 10,
-    fontWeight: '700',
+    fontSize: 9,
+    fontWeight: '800',
     textTransform: 'uppercase',
   },
   emptyContainer: {
@@ -289,21 +301,21 @@ const styles = StyleSheet.create({
     marginTop: 60,
   },
   emptyIconCircle: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 14,
+    marginBottom: 12,
   },
   emptyTitle: {
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: '700',
   },
   emptySubtitle: {
-    fontSize: 12,
+    fontSize: 11,
     textAlign: 'center',
-    marginTop: 4,
-    lineHeight: 16,
+    marginTop: 3,
+    lineHeight: 15,
   },
 });

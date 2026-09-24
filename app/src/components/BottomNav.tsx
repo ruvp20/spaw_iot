@@ -11,7 +11,7 @@ interface BottomNavProps {
 }
 
 export const BottomNav: React.FC<BottomNavProps> = ({ currentTab, onSelectTab }) => {
-  const { theme } = useTheme();
+  const { theme, isDark } = useTheme();
 
   const tabs: {
     key: TabKey;
@@ -38,6 +38,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({ currentTab, onSelectTab })
     >
       {tabs.map((tab) => {
         const isActive = currentTab === tab.key;
+        const activeColor = isDark ? theme.primaryInteractive : theme.primary;
         return (
           <TouchableOpacity
             key={tab.key}
@@ -55,14 +56,14 @@ export const BottomNav: React.FC<BottomNavProps> = ({ currentTab, onSelectTab })
             >
               <Ionicons
                 name={isActive ? tab.iconActive : tab.icon}
-                size={18}
-                color={isActive ? theme.primaryInteractive : theme.textMuted}
+                size={17}
+                color={isActive ? activeColor : theme.textMuted}
               />
             </View>
             <Text
               style={[
                 styles.tabLabel,
-                { color: isActive ? theme.primaryInteractive : theme.textMuted },
+                { color: isActive ? activeColor : theme.textMuted },
                 isActive && styles.tabLabelActive,
               ]}
             >
@@ -80,7 +81,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     borderTopWidth: 1,
     paddingTop: 8,
-    paddingBottom: 20,
+    paddingBottom: 22,
     paddingHorizontal: 12,
     justifyContent: 'space-around',
     alignItems: 'center',
@@ -92,17 +93,17 @@ const styles = StyleSheet.create({
   },
   iconContainer: {
     paddingHorizontal: 14,
-    paddingVertical: 5,
-    borderRadius: 16,
+    paddingVertical: 4,
+    borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
-    minHeight: 28,
+    minHeight: 26,
   },
   tabLabel: {
     fontSize: 10,
     fontWeight: '500',
     marginTop: 3,
-    letterSpacing: 0.2,
+    letterSpacing: 0.1,
   },
   tabLabelActive: {
     fontWeight: '700',

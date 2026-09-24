@@ -5,7 +5,7 @@ import { useTheme } from '../theme/ThemeContext';
 import { useFeeder } from '../context/FeederContext';
 
 export const QuickFeedCard: React.FC = () => {
-  const { theme } = useTheme();
+  const { theme, isDark } = useTheme();
   const { dispenseFood, isDispensing } = useFeeder();
   const [modalVisible, setModalVisible] = useState(false);
   const [customInput, setCustomInput] = useState('35');
@@ -36,16 +36,20 @@ export const QuickFeedCard: React.FC = () => {
       {/* Title Header */}
       <View style={styles.headerRow}>
         <View style={styles.titleGroup}>
-          <Text style={[styles.title, { color: theme.textSecondary }]}>
-            Quick Feed
+          <Text style={[styles.eyebrow, { color: theme.textMuted }]}>
+            MANUAL OVERRIDE
           </Text>
-          <Text style={[styles.subtitle, { color: theme.textMuted }]}>
-            Single-tap calibrated portions
+          <Text style={[styles.title, { color: theme.textPrimary }]}>
+            Quick Portions
           </Text>
         </View>
 
-        <View style={[styles.iconBadge, { backgroundColor: theme.accentClayTint }]}>
-          <Ionicons name="nutrition-outline" size={15} color={theme.accentClay} />
+        <View style={[styles.iconBadge, { backgroundColor: theme.primaryTint }]}>
+          <Ionicons
+            name="flash-outline"
+            size={14}
+            color={isDark ? theme.primaryInteractive : theme.primary}
+          />
         </View>
       </View>
 
@@ -68,14 +72,14 @@ export const QuickFeedCard: React.FC = () => {
           <Text style={[styles.btnLabel, { color: theme.textMuted }]}>Snack</Text>
         </TouchableOpacity>
 
-        {/* 40g Regular - subtly highlighted as recommended */}
+        {/* 40g Standard - subtly highlighted */}
         <TouchableOpacity
           style={[
             styles.feedBtn,
             styles.feedBtnRecommended,
             {
               backgroundColor: theme.primaryTint,
-              borderColor: theme.primaryInteractive,
+              borderColor: isDark ? theme.primaryInteractive : theme.primary,
             },
           ]}
           onPress={() => dispenseFood(40)}
@@ -83,10 +87,31 @@ export const QuickFeedCard: React.FC = () => {
           activeOpacity={0.7}
         >
           <View style={styles.recBadge}>
-            <Text style={[styles.recBadgeText, { color: theme.primaryInteractive }]}>Meal</Text>
+            <Text
+              style={[
+                styles.recBadgeText,
+                { color: isDark ? theme.primaryInteractive : theme.primary },
+              ]}
+            >
+              Meal
+            </Text>
           </View>
-          <Text style={[styles.btnAmount, { color: theme.primaryInteractive }]}>40g</Text>
-          <Text style={[styles.btnLabel, { color: theme.primaryInteractive }]}>Standard</Text>
+          <Text
+            style={[
+              styles.btnAmount,
+              { color: isDark ? theme.primaryInteractive : theme.primary },
+            ]}
+          >
+            40g
+          </Text>
+          <Text
+            style={[
+              styles.btnLabel,
+              { color: isDark ? theme.primaryInteractive : theme.primary },
+            ]}
+          >
+            Standard
+          </Text>
         </TouchableOpacity>
 
         {/* 60g Generous */}
@@ -119,8 +144,15 @@ export const QuickFeedCard: React.FC = () => {
           disabled={isDispensing}
           activeOpacity={0.7}
         >
-          <Ionicons name="options-outline" size={17} color={theme.accentSage} style={{ marginBottom: 2 }} />
-          <Text style={[styles.btnLabel, { color: theme.accentSage, fontWeight: '600' }]}>Custom</Text>
+          <Ionicons
+            name="options-outline"
+            size={16}
+            color={theme.textSecondary}
+            style={{ marginBottom: 2 }}
+          />
+          <Text style={[styles.btnLabel, { color: theme.textSecondary, fontWeight: '600' }]}>
+            Custom
+          </Text>
         </TouchableOpacity>
       </View>
 
@@ -147,7 +179,7 @@ export const QuickFeedCard: React.FC = () => {
                   Custom Portion
                 </Text>
                 <Text style={[styles.modalSubtitle, { color: theme.textMuted }]}>
-                  Target grams between 5g and 300g
+                  Specify exact target grams (5g – 300g)
                 </Text>
               </View>
               <TouchableOpacity
@@ -183,30 +215,41 @@ export const QuickFeedCard: React.FC = () => {
 
             {/* Quick preset chips */}
             <View style={styles.chipRow}>
-              {[15, 30, 50, 75, 100].map((val) => (
-                <TouchableOpacity
-                  key={val}
-                  style={[
-                    styles.chip,
-                    {
-                      backgroundColor: customInput === String(val) ? theme.primaryTint : theme.surfaceLight,
-                      borderColor: customInput === String(val) ? theme.primaryInteractive : theme.borderLight,
-                    },
-                  ]}
-                  onPress={() => handleQuickPreset(val)}
-                >
-                  <Text
+              {[15, 30, 50, 75, 100].map((val) => {
+                const isSelected = customInput === String(val);
+                return (
+                  <TouchableOpacity
+                    key={val}
                     style={[
-                      styles.chipText,
+                      styles.chip,
                       {
-                        color: customInput === String(val) ? theme.primaryInteractive : theme.textSecondary,
+                        backgroundColor: isSelected ? theme.primaryTint : theme.surfaceLight,
+                        borderColor: isSelected
+                          ? isDark
+                            ? theme.primaryInteractive
+                            : theme.primary
+                          : theme.borderLight,
                       },
                     ]}
+                    onPress={() => handleQuickPreset(val)}
                   >
-                    {val}g
-                  </Text>
-                </TouchableOpacity>
-              ))}
+                    <Text
+                      style={[
+                        styles.chipText,
+                        {
+                          color: isSelected
+                            ? isDark
+                              ? theme.primaryInteractive
+                              : theme.primary
+                            : theme.textSecondary,
+                        },
+                      ]}
+                    >
+                      {val}g
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
             </View>
 
             {/* Modal Actions */}
@@ -221,10 +264,15 @@ export const QuickFeedCard: React.FC = () => {
               </TouchableOpacity>
 
               <TouchableOpacity
-                style={[styles.confirmBtn, { backgroundColor: theme.primaryInteractive }]}
+                style={[
+                  styles.confirmBtn,
+                  {
+                    backgroundColor: isDark ? theme.primaryInteractive : theme.primary,
+                  },
+                ]}
                 onPress={handleCustomSubmit}
               >
-                <Text style={styles.confirmBtnText}>Dispense Now</Text>
+                <Text style={styles.confirmBtnText}>Dispense</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -236,38 +284,40 @@ export const QuickFeedCard: React.FC = () => {
 
 const styles = StyleSheet.create({
   card: {
-    borderRadius: 22,
+    borderRadius: 20,
     padding: 18,
     marginHorizontal: 20,
-    marginBottom: 14,
+    marginBottom: 12,
     borderWidth: 1,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.08,
-    shadowRadius: 10,
+    shadowRadius: 16,
     elevation: 2,
   },
   headerRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     marginBottom: 14,
   },
   titleGroup: {
     flex: 1,
   },
-  title: {
-    fontSize: 15,
+  eyebrow: {
+    fontSize: 9,
     fontWeight: '700',
-    letterSpacing: -0.2,
+    letterSpacing: 1.2,
+    marginBottom: 2,
   },
-  subtitle: {
-    fontSize: 12,
-    marginTop: 1,
+  title: {
+    fontSize: 16,
+    fontWeight: '700',
+    letterSpacing: -0.3,
   },
   iconBadge: {
-    width: 28,
-    height: 28,
-    borderRadius: 9,
+    width: 26,
+    height: 26,
+    borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -277,40 +327,40 @@ const styles = StyleSheet.create({
   },
   feedBtn: {
     flex: 1,
-    paddingVertical: 14,
-    borderRadius: 14,
+    paddingVertical: 12,
+    borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
     position: 'relative',
   },
   feedBtnRecommended: {
-    borderWidth: 1.5,
+    borderWidth: 1.2,
   },
   recBadge: {
     position: 'absolute',
     top: 4,
   },
   recBadgeText: {
-    fontSize: 9,
-    fontWeight: '700',
-    letterSpacing: 0.3,
+    fontSize: 8,
+    fontWeight: '800',
+    letterSpacing: 0.5,
     textTransform: 'uppercase',
   },
   btnAmount: {
     fontSize: 16,
     fontWeight: '800',
-    letterSpacing: -0.3,
-    marginTop: 4,
+    letterSpacing: -0.4,
+    marginTop: 5,
   },
   btnLabel: {
-    fontSize: 11,
+    fontSize: 10,
     marginTop: 2,
     fontWeight: '500',
   },
   modalBackdrop: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.6)',
+    backgroundColor: 'rgba(0,0,0,0.65)',
     alignItems: 'center',
     justifyContent: 'center',
     padding: 24,
@@ -318,7 +368,7 @@ const styles = StyleSheet.create({
   modalContent: {
     width: '100%',
     maxWidth: 360,
-    borderRadius: 22,
+    borderRadius: 20,
     padding: 22,
     borderWidth: 1,
   },
@@ -342,7 +392,7 @@ const styles = StyleSheet.create({
   inputRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderRadius: 14,
+    borderRadius: 12,
     borderWidth: 1,
     paddingHorizontal: 16,
     marginBottom: 14,
@@ -364,7 +414,7 @@ const styles = StyleSheet.create({
   },
   chip: {
     flex: 1,
-    paddingVertical: 6,
+    paddingVertical: 7,
     borderRadius: 8,
     alignItems: 'center',
     borderWidth: 1,

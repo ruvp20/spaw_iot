@@ -15,7 +15,7 @@ import { useTheme } from '../theme/ThemeContext';
 import { useFeeder } from '../context/FeederContext';
 
 export const SettingsScreen: React.FC = () => {
-  const { theme, mode, setThemeMode, isDark } = useTheme();
+  const { theme, setThemeMode, isDark } = useTheme();
   const {
     feederIp,
     setFeederIp,
@@ -33,12 +33,12 @@ export const SettingsScreen: React.FC = () => {
 
   const handleSaveIp = async () => {
     await setFeederIp(ipInput.trim());
-    Alert.alert('Settings Updated', `Feeder address set to: ${ipInput.trim()}`);
+    Alert.alert('Settings Saved', `Endpoint set to: ${ipInput.trim()}`);
   };
 
   const handleTare = async () => {
     await tareScale();
-    Alert.alert('Tare Complete', 'Bowl baseline set to zero.');
+    Alert.alert('Tare Complete', 'Scale baseline reset to 0.0g.');
   };
 
   const handleCalibrateFactor = async () => {
@@ -51,7 +51,7 @@ export const SettingsScreen: React.FC = () => {
     setCalibrating(true);
     try {
       await calibrateScale(val);
-      Alert.alert('Calibration Saved', `Scale calibrated with ${val}g reference object.`);
+      Alert.alert('Calibration Saved', `Scale factor adjusted using ${val}g reference weight.`);
     } catch (e) {
       Alert.alert('Error', 'Failed to save calibration factor.');
     } finally {
@@ -76,32 +76,39 @@ export const SettingsScreen: React.FC = () => {
           },
         ]}
       >
-        <View style={styles.cardHeader}>
-          <Ionicons name="color-palette-outline" size={16} color={theme.accentSage} style={{ marginRight: 6 }} />
-          <Text style={[styles.sectionHeading, { color: theme.textSecondary }]}>
-            Color Palette & Theme
-          </Text>
-        </View>
-        <Text style={[styles.cardDesc, { color: theme.textMuted }]}>
-          Earthy natural botanical themes designed for high contrast and calm tactile operation.
+        <Text style={[styles.eyebrow, { color: theme.textMuted }]}>
+          APPEARANCE
+        </Text>
+        <Text style={[styles.sectionHeading, { color: theme.textPrimary }]}>
+          Color Palette
+        </Text>
+        <Text style={[styles.cardDesc, { color: theme.textSecondary }]}>
+          Curated architectural palettes designed for tactile elegance and effortless legibility.
         </Text>
 
         <View style={styles.themeSelectorRow}>
-          {/* Dark Theme Option */}
+          {/* Dark Theme Option: Obsidian & Jade */}
           <TouchableOpacity
             style={[
               styles.themeOptionBtn,
               {
                 backgroundColor: isDark ? theme.surfaceLight : theme.surface,
-                borderColor: isDark ? theme.primaryInteractive : theme.borderLight,
+                borderColor: isDark
+                  ? theme.primaryInteractive
+                  : theme.borderLight,
               },
             ]}
             onPress={() => setThemeMode('dark')}
             activeOpacity={0.8}
           >
-            <View style={styles.themeSwatchRow}>
-              <View style={[styles.colorCircle, { backgroundColor: '#14281D' }]} />
-              <View style={[styles.colorCircle, { backgroundColor: '#2E5B42' }]} />
+            <View style={styles.themeHeaderRow}>
+              <View style={styles.themeSwatchRow}>
+                <View style={[styles.colorCircle, { backgroundColor: '#0D0F0E', borderWidth: 1, borderColor: '#333' }]} />
+                <View style={[styles.colorCircle, { backgroundColor: '#387B57' }]} />
+              </View>
+              {isDark && (
+                <Ionicons name="checkmark-circle" size={16} color={theme.primaryInteractive} />
+              )}
             </View>
             <Text
               style={[
@@ -109,39 +116,46 @@ export const SettingsScreen: React.FC = () => {
                 { color: isDark ? theme.primaryInteractive : theme.textPrimary },
               ]}
             >
-              Dark Forest
+              Obsidian & Jade
             </Text>
             <Text style={[styles.themeOptionDesc, { color: theme.textMuted }]}>
-              #14281D • #2E5B42
+              Titanium stone & radiant jade
             </Text>
           </TouchableOpacity>
 
-          {/* Light Theme Option */}
+          {/* Light Theme Option: Porcelain & Imperial Pine */}
           <TouchableOpacity
             style={[
               styles.themeOptionBtn,
               {
                 backgroundColor: !isDark ? theme.surfaceLight : theme.surface,
-                borderColor: !isDark ? theme.primaryInteractive : theme.borderLight,
+                borderColor: !isDark
+                  ? theme.primary
+                  : theme.borderLight,
               },
             ]}
             onPress={() => setThemeMode('light')}
             activeOpacity={0.8}
           >
-            <View style={styles.themeSwatchRow}>
-              <View style={[styles.colorCircle, { backgroundColor: '#F7F5F0', borderWidth: 1, borderColor: '#DDD' }]} />
-              <View style={[styles.colorCircle, { backgroundColor: '#2E5B42' }]} />
+            <View style={styles.themeHeaderRow}>
+              <View style={styles.themeSwatchRow}>
+                <View style={[styles.colorCircle, { backgroundColor: '#F8F9F8', borderWidth: 1, borderColor: '#D0D5D2' }]} />
+                <View style={[styles.colorCircle, { backgroundColor: '#1F4733' }]} />
+              </View>
+              {!isDark && (
+                <Ionicons name="checkmark-circle" size={16} color={theme.primary} />
+              )}
             </View>
             <Text
               style={[
                 styles.themeOptionTitle,
-                { color: !isDark ? theme.primaryInteractive : theme.textPrimary },
+                { color: !isDark ? theme.primary : theme.textPrimary },
               ]}
             >
-              Warm Linen
+              Porcelain & Pine
             </Text>
             <Text style={[styles.themeOptionDesc, { color: theme.textMuted }]}>
-              Botanical Linen & Pine
+              Alabaster & imperial pine
             </Text>
           </TouchableOpacity>
         </View>
@@ -159,21 +173,28 @@ export const SettingsScreen: React.FC = () => {
         ]}
       >
         <View style={styles.toggleRow}>
-          <View style={[styles.iconCircle, { backgroundColor: theme.accentOchreTint }]}>
-            <Ionicons name="game-controller-outline" size={17} color={theme.accentOchre} />
+          <View style={[styles.iconCircle, { backgroundColor: theme.primaryTint }]}>
+            <Ionicons
+              name="cube-outline"
+              size={16}
+              color={isDark ? theme.primaryInteractive : theme.primary}
+            />
           </View>
           <View style={{ flex: 1 }}>
             <Text style={[styles.cardTitle, { color: theme.textPrimary }]}>
-              Interactive Demo Mode
+              Hardware Simulation Mode
             </Text>
-            <Text style={[styles.cardDesc, { color: theme.textMuted }]}>
-              Simulate weight, pouring dynamics, and logs without physical hardware.
+            <Text style={[styles.cardDesc, { color: theme.textSecondary }]}>
+              Simulates load cell strain telemetry and servo gate states without physical ESP32.
             </Text>
           </View>
           <Switch
             value={isMockMode}
             onValueChange={setMockMode}
-            trackColor={{ false: theme.surfaceLight, true: theme.primaryInteractive }}
+            trackColor={{
+              false: theme.surfaceLight,
+              true: isDark ? theme.primaryInteractive : theme.primary,
+            }}
             thumbColor={isMockMode ? '#FFF' : theme.textMuted}
           />
         </View>
@@ -190,14 +211,14 @@ export const SettingsScreen: React.FC = () => {
           },
         ]}
       >
-        <View style={styles.cardHeader}>
-          <Ionicons name="wifi" size={16} color={theme.accentSage} style={{ marginRight: 6 }} />
-          <Text style={[styles.sectionHeading, { color: theme.textSecondary }]}>
-            ESP32 Network Endpoint
-          </Text>
-        </View>
-        <Text style={[styles.cardDesc, { color: theme.textMuted }]}>
-          Enter local IP address or mDNS hostname (e.g. 192.168.1.105 or petfeeder.local).
+        <Text style={[styles.eyebrow, { color: theme.textMuted }]}>
+          CONNECTIVITY
+        </Text>
+        <Text style={[styles.sectionHeading, { color: theme.textPrimary }]}>
+          ESP32 Endpoint
+        </Text>
+        <Text style={[styles.cardDesc, { color: theme.textSecondary }]}>
+          Local IP address or mDNS hostname (`192.168.1.105` or `petfeeder.local`).
         </Text>
 
         <View
@@ -219,7 +240,10 @@ export const SettingsScreen: React.FC = () => {
             autoCorrect={false}
           />
           <TouchableOpacity
-            style={[styles.saveIpBtn, { backgroundColor: theme.primaryInteractive }]}
+            style={[
+              styles.saveIpBtn,
+              { backgroundColor: isDark ? theme.primaryInteractive : theme.primary },
+            ]}
             onPress={handleSaveIp}
           >
             <Text style={styles.saveIpBtnText}>Save</Text>
@@ -237,9 +261,14 @@ export const SettingsScreen: React.FC = () => {
           onPress={refreshStatus}
           activeOpacity={0.7}
         >
-          <Ionicons name="radio-outline" size={15} color={theme.accentSage} style={{ marginRight: 6 }} />
+          <Ionicons
+            name="radio-outline"
+            size={14}
+            color={theme.textSecondary}
+            style={{ marginRight: 6 }}
+          />
           <Text style={[styles.pingBtnText, { color: theme.textSecondary }]}>
-            Test Connection & Ping Feeder
+            Ping Feeder & Sync Status
           </Text>
         </TouchableOpacity>
       </View>
@@ -255,25 +284,32 @@ export const SettingsScreen: React.FC = () => {
           },
         ]}
       >
-        <View style={styles.cardHeader}>
-          <Ionicons name="scale" size={16} color={theme.accentClay} style={{ marginRight: 6 }} />
-          <Text style={[styles.sectionHeading, { color: theme.textSecondary }]}>
-            Load Cell Calibration
-          </Text>
-        </View>
-        <Text style={[styles.cardDesc, { color: theme.textMuted }]}>
-          Calibrate the HX711 24-bit strain gauge for precise gram accuracy.
+        <Text style={[styles.eyebrow, { color: theme.textMuted }]}>
+          CALIBRATION WIZARD
+        </Text>
+        <Text style={[styles.sectionHeading, { color: theme.textPrimary }]}>
+          HX711 Strain Gauge Calibration
+        </Text>
+        <Text style={[styles.cardDesc, { color: theme.textSecondary }]}>
+          Two-step process to calibrate zero baseline and grams scaling factor.
         </Text>
 
         {/* Step 1 */}
         <View style={[styles.wizardStep, { backgroundColor: theme.surfaceLight }]}>
           <View style={[styles.stepNumCircle, { backgroundColor: theme.surface }]}>
-            <Text style={[styles.stepNumText, { color: theme.accentSage }]}>1</Text>
+            <Text
+              style={[
+                styles.stepNumText,
+                { color: isDark ? theme.primaryInteractive : theme.primary },
+              ]}
+            >
+              1
+            </Text>
           </View>
           <View style={{ flex: 1 }}>
-            <Text style={[styles.stepTitle, { color: theme.textPrimary }]}>Tare Empty Bowl</Text>
+            <Text style={[styles.stepTitle, { color: theme.textPrimary }]}>Zero Tare</Text>
             <Text style={[styles.stepHelp, { color: theme.textMuted }]}>
-              Empty bowl on platform
+              Clean empty bowl on platform
             </Text>
           </View>
           <TouchableOpacity
@@ -293,10 +329,17 @@ export const SettingsScreen: React.FC = () => {
         {/* Step 2 */}
         <View style={[styles.wizardStep, { backgroundColor: theme.surfaceLight, marginTop: 10 }]}>
           <View style={[styles.stepNumCircle, { backgroundColor: theme.surface }]}>
-            <Text style={[styles.stepNumText, { color: theme.accentSage }]}>2</Text>
+            <Text
+              style={[
+                styles.stepNumText,
+                { color: isDark ? theme.primaryInteractive : theme.primary },
+              ]}
+            >
+              2
+            </Text>
           </View>
           <View style={{ flex: 1 }}>
-            <Text style={[styles.stepTitle, { color: theme.textPrimary }]}>Known Reference Weight</Text>
+            <Text style={[styles.stepTitle, { color: theme.textPrimary }]}>Reference Calibration</Text>
             <View style={styles.weightInputRow}>
               <TextInput
                 style={[
@@ -319,8 +362,8 @@ export const SettingsScreen: React.FC = () => {
             style={[
               styles.stepBtn,
               {
-                backgroundColor: theme.primaryInteractive,
-                borderColor: theme.primaryInteractive,
+                backgroundColor: isDark ? theme.primaryInteractive : theme.primary,
+                borderColor: isDark ? theme.primaryInteractive : theme.primary,
               },
             ]}
             onPress={handleCalibrateFactor}
@@ -346,14 +389,14 @@ export const SettingsScreen: React.FC = () => {
           },
         ]}
       >
-        <View style={styles.cardHeader}>
-          <Ionicons name="hardware-chip-outline" size={16} color={theme.accentSage} style={{ marginRight: 6 }} />
-          <Text style={[styles.sectionHeading, { color: theme.textSecondary }]}>
-            Servo Gate Testing
-          </Text>
-        </View>
-        <Text style={[styles.cardDesc, { color: theme.textMuted }]}>
-          Command MG996R gate angles to inspect mechanical action without kibble.
+        <Text style={[styles.eyebrow, { color: theme.textMuted }]}>
+          DIAGNOSTICS
+        </Text>
+        <Text style={[styles.sectionHeading, { color: theme.textPrimary }]}>
+          Servo Gate Angle Testing
+        </Text>
+        <Text style={[styles.cardDesc, { color: theme.textSecondary }]}>
+          Command MG996R gate angles to inspect mechanical action without food.
         </Text>
 
         <View style={styles.servoGrid}>
@@ -397,7 +440,12 @@ export const SettingsScreen: React.FC = () => {
             ]}
             onPress={() => Alert.alert('Gate Open', 'Servo set to 95° (Open)')}
           >
-            <Text style={[styles.servoActionLabel, { color: theme.primaryInteractive }]}>
+            <Text
+              style={[
+                styles.servoActionLabel,
+                { color: isDark ? theme.primaryInteractive : theme.primary },
+              ]}
+            >
               Open (95°)
             </Text>
           </TouchableOpacity>
@@ -407,7 +455,7 @@ export const SettingsScreen: React.FC = () => {
       {/* Footer Info */}
       <View style={styles.aboutCard}>
         <Text style={[styles.aboutText, { color: theme.textMuted }]}>
-          Spaw IoT Smart Pet Feeder
+          Spaw IoT • Precision Pet Feeder
         </Text>
         <Text style={[styles.aboutSub, { color: theme.textDisabled }]}>
           ESP32 FW v{status.firmware} • Mobile App v1.0.0
@@ -424,22 +472,23 @@ const styles = StyleSheet.create({
   card: {
     borderRadius: 20,
     padding: 18,
-    marginBottom: 14,
+    marginBottom: 12,
     borderWidth: 1,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 16,
     elevation: 2,
   },
-  cardHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 4,
+  eyebrow: {
+    fontSize: 9,
+    fontWeight: '700',
+    letterSpacing: 1.2,
+    marginBottom: 2,
   },
   sectionHeading: {
-    fontSize: 13,
+    fontSize: 16,
     fontWeight: '700',
-    letterSpacing: -0.1,
+    letterSpacing: -0.2,
   },
   cardTitle: {
     fontSize: 14,
@@ -447,9 +496,9 @@ const styles = StyleSheet.create({
     letterSpacing: -0.2,
   },
   cardDesc: {
-    fontSize: 12,
+    fontSize: 11,
     marginTop: 2,
-    lineHeight: 16,
+    lineHeight: 15,
   },
   themeSelectorRow: {
     flexDirection: 'row',
@@ -459,18 +508,23 @@ const styles = StyleSheet.create({
   themeOptionBtn: {
     flex: 1,
     padding: 12,
-    borderRadius: 14,
+    borderRadius: 12,
     borderWidth: 1.5,
+  },
+  themeHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
   },
   themeSwatchRow: {
     flexDirection: 'row',
-    gap: 6,
-    marginBottom: 8,
+    gap: 5,
   },
   colorCircle: {
-    width: 18,
-    height: 18,
-    borderRadius: 9,
+    width: 16,
+    height: 16,
+    borderRadius: 8,
   },
   themeOptionTitle: {
     fontSize: 13,
@@ -479,7 +533,6 @@ const styles = StyleSheet.create({
   themeOptionDesc: {
     fontSize: 10,
     marginTop: 2,
-    fontFamily: 'monospace',
   },
   toggleRow: {
     flexDirection: 'row',
@@ -499,7 +552,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     borderWidth: 1,
     paddingHorizontal: 12,
-    marginTop: 12,
+    marginTop: 10,
   },
   textInput: {
     flex: 1,
@@ -521,7 +574,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 12,
+    borderRadius: 10,
     paddingVertical: 9,
     marginTop: 10,
     borderWidth: 1,
@@ -534,14 +587,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     padding: 12,
-    borderRadius: 14,
+    borderRadius: 12,
     gap: 10,
     marginTop: 10,
   },
   stepNumCircle: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
+    width: 22,
+    height: 22,
+    borderRadius: 11,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -560,7 +613,7 @@ const styles = StyleSheet.create({
   stepBtn: {
     paddingHorizontal: 12,
     paddingVertical: 7,
-    borderRadius: 10,
+    borderRadius: 8,
     borderWidth: 1,
   },
   stepBtnText: {
@@ -578,7 +631,7 @@ const styles = StyleSheet.create({
     marginTop: 5,
   },
   weightInput: {
-    borderRadius: 8,
+    borderRadius: 6,
     borderWidth: 1,
     paddingHorizontal: 8,
     paddingVertical: 3,
@@ -593,7 +646,7 @@ const styles = StyleSheet.create({
   servoGrid: {
     flexDirection: 'row',
     gap: 8,
-    marginTop: 12,
+    marginTop: 10,
   },
   servoActionBtn: {
     flex: 1,
