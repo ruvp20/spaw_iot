@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "npm --prefix app start",
     "start": "npm --prefix app start",
+    "build": "npm --prefix app run build",
     "web": "npm --prefix app run web",
     "android": "npm --prefix app run android",
     "ios": "npm --prefix app run ios"
