@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import React, { useRef, useEffect } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Animated } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../theme/ThemeContext';
 import { useFeeder } from '../context/FeederContext';
@@ -7,6 +7,60 @@ import { useFeeder } from '../context/FeederContext';
 export const Header: React.FC = () => {
   const { theme, isDark, toggleTheme } = useTheme();
   const { connectionStatus, isMockMode, feederIp, refreshStatus } = useFeeder();
+
+  // Animation values
+  const spinAnim = useRef(new Animated.Value(isDark ? 1 : 0)).current;
+  const scaleAnim = useRef(new Animated.Value(1)).current;
+  const pulseAnim = useRef(new Animated.Value(1)).current;
+
+  // Gentle status dot pulse
+  useEffect(() => {
+    const pulseLoop = Animated.loop(
+      Animated.sequence([
+        Animated.timing(pulseAnim, {
+          toValue: 0.35,
+          duration: 1200,
+          useNativeDriver: true,
+        }),
+        Animated.timing(pulseAnim, {
+          toValue: 1,
+          duration: 1200,
+          useNativeDriver: true,
+        }),
+      ])
+    );
+    pulseLoop.start();
+    return () => pulseLoop.stop();
+  }, []);
+
+  const handleToggleTheme = () => {
+    Animated.parallel([
+      Animated.timing(spinAnim, {
+        toValue: isDark ? 0 : 1,
+        duration: 300,
+        useNativeDriver: true,
+      }),
+      Animated.sequence([
+        Animated.timing(scaleAnim, {
+          toValue: 0.75,
+          duration: 90,
+          useNativeDriver: true,
+        }),
+        Animated.spring(scaleAnim, {
+          toValue: 1,
+          friction: 4,
+          tension: 50,
+          useNativeDriver: true,
+        }),
+      ]),
+    ]).start();
+    toggleTheme();
+  };
+
+  const spin = spinAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['0deg', '360deg'],
+  });
 
   const getStatusInfo = () => {
     switch (connectionStatus) {
@@ -60,7 +114,7 @@ export const Header: React.FC = () => {
         </View>
       </View>
 
-      {/* Right Actions: Status Badge & Theme Toggle */}
+      {/* Right Actions: Status Badge & Animated Theme Toggle */}
       <View style={styles.actionGroup}>
         {/* Connection status pill */}
         <TouchableOpacity
@@ -68,28 +122,37 @@ export const Header: React.FC = () => {
           onPress={refreshStatus}
           activeOpacity={0.7}
         >
-          <View style={[styles.statusDot, { backgroundColor: status.dot }]} />
+          <Animated.View
+            style={[
+              styles.statusDot,
+              { backgroundColor: status.dot, opacity: pulseAnim },
+            ]}
+          />
           <Text style={[styles.statusLabel, { color: status.color }]}>{status.label}</Text>
         </TouchableOpacity>
 
-        {/* Theme Toggle Button */}
+        {/* Animated Theme Toggle Button */}
         <TouchableOpacity
-          style={[
-            styles.themeBtn,
-            {
-              backgroundColor: theme.surface,
-              borderColor: theme.border,
-            },
-          ]}
-          onPress={toggleTheme}
-          activeOpacity={0.7}
+          onPress={handleToggleTheme}
+          activeOpacity={0.8}
           accessibilityLabel="Toggle Theme"
         >
-          <Ionicons
-            name={isDark ? 'sunny' : 'moon'}
-            size={14}
-            color={isDark ? theme.accentOchre : theme.textSecondary}
-          />
+          <Animated.View
+            style={[
+              styles.themeBtn,
+              {
+                backgroundColor: theme.surface,
+                borderColor: theme.border,
+                transform: [{ rotate: spin }, { scale: scaleAnim }],
+              },
+            ]}
+          >
+            <Ionicons
+              name={isDark ? 'sunny' : 'moon'}
+              size={14}
+              color={isDark ? theme.accentOchre : theme.textSecondary}
+            />
+          </Animated.View>
         </TouchableOpacity>
       </View>
     </View>

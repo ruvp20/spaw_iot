@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import React, { useRef } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Animated } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../theme/ThemeContext';
 import { useFeeder } from '../context/FeederContext';
@@ -14,6 +14,16 @@ interface HomeScreenProps {
 export const HomeScreen: React.FC<HomeScreenProps> = ({ onNavigateToSprint, onNavigateToFill }) => {
   const { theme, isDark } = useTheme();
   const { sprint, status, executeFill, isDispensing } = useFeeder();
+
+  const fillBtnScale = useRef(new Animated.Value(1)).current;
+
+  const handleFillPress = () => {
+    Animated.sequence([
+      Animated.timing(fillBtnScale, { toValue: 0.90, duration: 70, useNativeDriver: true }),
+      Animated.spring(fillBtnScale, { toValue: 1, friction: 4, tension: 50, useNativeDriver: true }),
+    ]).start();
+    executeFill();
+  };
 
   const formatCountdown = (epoch: number) => {
     const diff = epoch - Date.now();
@@ -59,16 +69,22 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onNavigateToSprint, onNa
         </View>
 
         <TouchableOpacity
-          style={[
-            styles.fillActionBtn,
-            { backgroundColor: isDark ? theme.primaryInteractive : theme.primary },
-          ]}
-          onPress={executeFill}
+          onPress={handleFillPress}
           disabled={isDispensing}
           activeOpacity={0.8}
         >
-          <Ionicons name="water" size={13} color="#FFF" style={{ marginRight: 5 }} />
-          <Text style={styles.fillActionText}>Fill Bowl</Text>
+          <Animated.View
+            style={[
+              styles.fillActionBtn,
+              {
+                backgroundColor: isDark ? theme.primaryInteractive : theme.primary,
+                transform: [{ scale: fillBtnScale }],
+              },
+            ]}
+          >
+            <Ionicons name="water" size={13} color="#FFF" style={{ marginRight: 5 }} />
+            <Text style={styles.fillActionText}>Fill Bowl</Text>
+          </Animated.View>
         </TouchableOpacity>
       </View>
 

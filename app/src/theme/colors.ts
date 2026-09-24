@@ -13,11 +13,11 @@ export interface ThemePalette {
   primaryTint: string;
 
   // Classy Earthy accents
-  accentClay: string;          // Artisanal terracotta
+  accentClay: string;          // Artisanal terracotta / cinnamon
   accentClayTint: string;
-  accentOchre: string;         // Warm cognac gold
+  accentOchre: string;         // Warm tonic amber / honey
   accentOchreTint: string;
-  accentSage: string;          // Silvery eucalyptus / jade
+  accentSage: string;          // Botanical bay leaf / eucalyptus
   accentSageTint: string;
 
   // Functional status
@@ -43,7 +43,7 @@ export interface ThemePalette {
  */
 export const darkPalette: ThemePalette = {
   isDark: true,
-  background: '#0D0F0E',        // Deep obsidian stone (not murky green!)
+  background: '#0D0F0E',        // Deep obsidian stone
   surface: '#141715',           // Smoked graphite surface
   surfaceLight: '#1B201D',      // Subtle elevated surface
   surfaceElevated: '#232925',   // Floating dialogs & active highlights
@@ -75,41 +75,41 @@ export const darkPalette: ThemePalette = {
 };
 
 /**
- * Light Theme: "Porcelain & Imperial Pine"
- * Gallery-grade alabaster porcelain canvas with deep imperial forest pine and warm cognac accents.
- * Crisp, airy, high-contrast, and timelessly classy.
+ * Light Theme: "Cream White & Brown Tonic"
+ * Velvety clotted cream white canvas with deep roasted espresso tonic brown, warm cognac honey, and spiced clay.
+ * Warm, artisanal, tactile, and deeply sophisticated.
  */
 export const lightPalette: ThemePalette = {
   isDark: false,
-  background: '#F8F9F8',        // Gallery alabaster porcelain (crisp, not yellow/beige!)
-  surface: '#FFFFFF',           // Pure crisp white cards
-  surfaceLight: '#F0F3F1',      // Glazed stone for inputs/nested pills
-  surfaceElevated: '#E6EAE7',   // Elevated chips
-  border: 'rgba(0, 0, 0, 0.07)', // Ultra-clean hairline
-  borderLight: 'rgba(0, 0, 0, 0.035)',
+  background: '#FBF9F5',        // Velvety warm cream white
+  surface: '#FFFFFF',           // Pure ivory snow white cards
+  surfaceLight: '#F3EDE3',      // Soft toasted oat / steamed crema for nested chips & steppers
+  surfaceElevated: '#EBE3D5',   // Warm toasted almond for floating dialogs
+  border: 'rgba(92, 58, 33, 0.10)', // Delicate roasted tonic brown hairline
+  borderLight: 'rgba(92, 58, 33, 0.05)',
 
-  primary: '#1F4733',           // Imperial forest pine (deep & authoritative)
-  primaryInteractive: '#183B29',// Deep command green
-  primaryTint: 'rgba(31, 71, 51, 0.08)',
+  primary: '#5C3A21',           // Roasted espresso tonic brown
+  primaryInteractive: '#482B17',// Deep rich espresso for buttons & active highlights
+  primaryTint: 'rgba(92, 58, 33, 0.09)', // Silky crema wash
 
-  accentClay: '#BA5336',        // Rich terracotta clay
-  accentClayTint: 'rgba(186, 83, 54, 0.08)',
-  accentOchre: '#A87428',       // Warm cognac gold
-  accentOchreTint: 'rgba(168, 116, 40, 0.08)',
-  accentSage: '#2B5E44',        // High-contrast botanical sage
-  accentSageTint: 'rgba(43, 94, 68, 0.08)',
+  accentClay: '#B85835',        // Spiced cinnamon terracotta
+  accentClayTint: 'rgba(184, 88, 53, 0.09)',
+  accentOchre: '#BD7E32',       // Golden tonic amber honey
+  accentOchreTint: 'rgba(189, 126, 50, 0.10)',
+  accentSage: '#58735A',        // Dried botanical bay leaf / olive
+  accentSageTint: 'rgba(88, 115, 90, 0.09)',
 
-  danger: '#C0392B',
-  dangerTint: 'rgba(192, 57, 43, 0.08)',
-  success: '#278252',
-  successTint: 'rgba(39, 130, 82, 0.09)',
+  danger: '#BD3737',
+  dangerTint: 'rgba(189, 55, 55, 0.08)',
+  success: '#2B7A45',
+  successTint: 'rgba(43, 122, 69, 0.09)',
 
-  textPrimary: '#0E1410',       // Deepest charcoal pine (razor-sharp legibility)
-  textSecondary: '#47534C',     // Sophisticated botanical slate
-  textMuted: '#7A8880',         // Calm stone grey
-  textDisabled: '#B0BCB4',
+  textPrimary: '#231812',       // Deep roasted espresso bean (crisp, warm, high-contrast)
+  textSecondary: '#5E4C41',     // Warm roasted mocha
+  textMuted: '#8D7B6F',         // Soft toasted hazelnut taupe
+  textDisabled: '#C2B5AA',
 
-  cardShadow: 'rgba(14, 20, 16, 0.04)',
+  cardShadow: 'rgba(46, 28, 16, 0.05)',
 };
 
 // Default export for backward compatibility

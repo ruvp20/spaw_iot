@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { StyleSheet, SafeAreaView, View } from 'react-native';
+import React, { useState, useRef, useEffect } from 'react';
+import { StyleSheet, SafeAreaView, View, Animated } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { ThemeProvider, useTheme } from './src/theme/ThemeContext';
 import { FeederProvider } from './src/context/FeederContext';
@@ -14,6 +14,39 @@ import { SettingsScreen } from './src/screens/SettingsScreen';
 function MainApp() {
   const [currentTab, setCurrentTab] = useState<TabKey>('home');
   const { theme, isDark } = useTheme();
+
+  // Theme cross-fade animation
+  const themeFadeAnim = useRef(new Animated.Value(1)).current;
+
+  // Screen entrance animation on tab change
+  const tabFadeAnim = useRef(new Animated.Value(1)).current;
+  const tabSlideAnim = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    themeFadeAnim.setValue(0.7);
+    Animated.timing(themeFadeAnim, {
+      toValue: 1,
+      duration: 240,
+      useNativeDriver: true,
+    }).start();
+  }, [isDark]);
+
+  useEffect(() => {
+    tabFadeAnim.setValue(0);
+    tabSlideAnim.setValue(8);
+    Animated.parallel([
+      Animated.timing(tabFadeAnim, {
+        toValue: 1,
+        duration: 220,
+        useNativeDriver: true,
+      }),
+      Animated.timing(tabSlideAnim, {
+        toValue: 0,
+        duration: 220,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, [currentTab]);
 
   const renderCurrentScreen = () => {
     switch (currentTab) {
@@ -45,11 +78,21 @@ function MainApp() {
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: theme.background }]}>
       <StatusBar style={isDark ? 'light' : 'dark'} />
-      <Header />
-      <View style={styles.screenContainer}>
-        {renderCurrentScreen()}
-      </View>
-      <BottomNav currentTab={currentTab} onSelectTab={setCurrentTab} />
+      <Animated.View style={[styles.mainWrapper, { opacity: themeFadeAnim }]}>
+        <Header />
+        <Animated.View
+          style={[
+            styles.screenContainer,
+            {
+              opacity: tabFadeAnim,
+              transform: [{ translateY: tabSlideAnim }],
+            },
+          ]}
+        >
+          {renderCurrentScreen()}
+        </Animated.View>
+        <BottomNav currentTab={currentTab} onSelectTab={setCurrentTab} />
+      </Animated.View>
     </SafeAreaView>
   );
 }
@@ -66,6 +109,9 @@ export default function App() {
 
 const styles = StyleSheet.create({
   safeArea: {
+    flex: 1,
+  },
+  mainWrapper: {
     flex: 1,
   },
   screenContainer: {

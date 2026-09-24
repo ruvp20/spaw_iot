@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import React, { useState, useRef } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Animated } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../theme/ThemeContext';
 import { useFeeder } from '../context/FeederContext';
@@ -16,7 +16,14 @@ export const SprintScreen: React.FC = () => {
   const intervalOptions = [2, 4, 6, 8, 12];
   const countOptions = [2, 3, 4, 5, 6];
 
+  const saveScale = useRef(new Animated.Value(1)).current;
+  const cancelScale = useRef(new Animated.Value(1)).current;
+
   const handleStartSprint = async () => {
+    Animated.sequence([
+      Animated.timing(saveScale, { toValue: 0.94, duration: 70, useNativeDriver: true }),
+      Animated.spring(saveScale, { toValue: 1, friction: 4, tension: 50, useNativeDriver: true }),
+    ]).start();
     setIsSaving(true);
     try {
       await saveSprint(grams, intervalHours, totalFeeds);
@@ -28,6 +35,10 @@ export const SprintScreen: React.FC = () => {
   };
 
   const handleCancelSprint = async () => {
+    Animated.sequence([
+      Animated.timing(cancelScale, { toValue: 0.94, duration: 70, useNativeDriver: true }),
+      Animated.spring(cancelScale, { toValue: 1, friction: 4, tension: 50, useNativeDriver: true }),
+    ]).start();
     await cancelSprint();
   };
 
@@ -97,20 +108,24 @@ export const SprintScreen: React.FC = () => {
           </View>
 
           <TouchableOpacity
-            style={[
-              styles.cancelButton,
-              {
-                backgroundColor: theme.dangerTint,
-                borderColor: theme.borderLight,
-              },
-            ]}
             onPress={handleCancelSprint}
             activeOpacity={0.8}
           >
-            <Ionicons name="close-circle-outline" size={15} color={theme.danger} style={{ marginRight: 6 }} />
-            <Text style={[styles.cancelText, { color: theme.danger }]}>
-              Cancel Recurring Schedule
-            </Text>
+            <Animated.View
+              style={[
+                styles.cancelButton,
+                {
+                  backgroundColor: theme.dangerTint,
+                  borderColor: theme.borderLight,
+                  transform: [{ scale: cancelScale }],
+                },
+              ]}
+            >
+              <Ionicons name="close-circle-outline" size={15} color={theme.danger} style={{ marginRight: 6 }} />
+              <Text style={[styles.cancelText, { color: theme.danger }]}>
+                Cancel Recurring Schedule
+              </Text>
+            </Animated.View>
           </TouchableOpacity>
         </View>
       ) : null}
@@ -267,18 +282,24 @@ export const SprintScreen: React.FC = () => {
 
         {/* Start / Update Button */}
         <TouchableOpacity
-          style={[
-            styles.saveBtn,
-            { backgroundColor: isDark ? theme.primaryInteractive : theme.primary },
-          ]}
           onPress={handleStartSprint}
           disabled={isSaving}
           activeOpacity={0.8}
         >
-          <Ionicons name="calendar-outline" size={16} color="#FFF" style={{ marginRight: 6 }} />
-          <Text style={styles.saveBtnText}>
-            {sprint.enabled ? 'Update Schedule' : 'Start Schedule'}
-          </Text>
+          <Animated.View
+            style={[
+              styles.saveBtn,
+              {
+                backgroundColor: isDark ? theme.primaryInteractive : theme.primary,
+                transform: [{ scale: saveScale }],
+              },
+            ]}
+          >
+            <Ionicons name="calendar-outline" size={16} color="#FFF" style={{ marginRight: 6 }} />
+            <Text style={styles.saveBtnText}>
+              {sprint.enabled ? 'Update Schedule' : 'Start Schedule'}
+            </Text>
+          </Animated.View>
         </TouchableOpacity>
       </View>
 

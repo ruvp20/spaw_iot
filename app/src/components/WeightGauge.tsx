@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
+import React, { useRef, useEffect } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Animated } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../theme/ThemeContext';
 import { useFeeder } from '../context/FeederContext';
@@ -10,6 +10,67 @@ export const WeightGauge: React.FC = () => {
 
   const maxCapacity = 300;
   const percentage = Math.min(100, Math.max(0, (status.weight / maxCapacity) * 100));
+
+  // Animations
+  const dialEntrance = useRef(new Animated.Value(0.95)).current;
+  const pulseAnim = useRef(new Animated.Value(1)).current;
+  const tareScaleAnim = useRef(new Animated.Value(1)).current;
+
+  // Mount entrance
+  useEffect(() => {
+    Animated.spring(dialEntrance, {
+      toValue: 1,
+      friction: 6,
+      tension: 40,
+      useNativeDriver: true,
+    }).start();
+  }, []);
+
+  // Dial pulsing: dynamic speed based on whether it is dispensing or idle
+  useEffect(() => {
+    let anim: Animated.CompositeAnimation;
+    if (isDispensing) {
+      anim = Animated.loop(
+        Animated.sequence([
+          Animated.timing(pulseAnim, {
+            toValue: 1.03,
+            duration: 600,
+            useNativeDriver: true,
+          }),
+          Animated.timing(pulseAnim, {
+            toValue: 0.98,
+            duration: 600,
+            useNativeDriver: true,
+          }),
+        ])
+      );
+    } else {
+      anim = Animated.loop(
+        Animated.sequence([
+          Animated.timing(pulseAnim, {
+            toValue: 1.01,
+            duration: 2000,
+            useNativeDriver: true,
+          }),
+          Animated.timing(pulseAnim, {
+            toValue: 0.995,
+            duration: 2000,
+            useNativeDriver: true,
+          }),
+        ])
+      );
+    }
+    anim.start();
+    return () => anim.stop();
+  }, [isDispensing]);
+
+  const handleTarePress = () => {
+    Animated.sequence([
+      Animated.timing(tareScaleAnim, { toValue: 0.88, duration: 80, useNativeDriver: true }),
+      Animated.spring(tareScaleAnim, { toValue: 1, friction: 4, useNativeDriver: true }),
+    ]).start();
+    tareScale();
+  };
 
   return (
     <View
@@ -34,31 +95,35 @@ export const WeightGauge: React.FC = () => {
         </View>
 
         <TouchableOpacity
-          style={[
-            styles.tareButton,
-            {
-              backgroundColor: theme.surfaceLight,
-              borderColor: theme.borderLight,
-            },
-          ]}
-          onPress={tareScale}
+          onPress={handleTarePress}
           disabled={isDispensing}
-          activeOpacity={0.7}
+          activeOpacity={0.8}
         >
-          <Ionicons name="scale-outline" size={13} color={theme.textSecondary} style={{ marginRight: 4 }} />
-          <Text style={[styles.tareText, { color: theme.textSecondary }]}>Tare</Text>
+          <Animated.View
+            style={[
+              styles.tareButton,
+              {
+                backgroundColor: theme.surfaceLight,
+                borderColor: theme.borderLight,
+                transform: [{ scale: tareScaleAnim }],
+              },
+            ]}
+          >
+            <Ionicons name="scale-outline" size={13} color={theme.textSecondary} style={{ marginRight: 4 }} />
+            <Text style={[styles.tareText, { color: theme.textSecondary }]}>Tare</Text>
+          </Animated.View>
         </TouchableOpacity>
       </View>
 
-      {/* Main Circular Dial Instrument */}
+      {/* Main Circular Dial Instrument with Entrance & Breathing Pulse */}
       <View style={styles.gaugeContainer}>
-        {/* Outer Instrument Ring */}
-        <View
+        <Animated.View
           style={[
             styles.outerDial,
             {
               borderColor: isDispensing ? theme.accentClay : theme.border,
               backgroundColor: isDispensing ? theme.accentClayTint : theme.surfaceLight,
+              transform: [{ scale: Animated.multiply(dialEntrance, pulseAnim) }],
             },
           ]}
         >
@@ -118,7 +183,7 @@ export const WeightGauge: React.FC = () => {
               </>
             )}
           </View>
-        </View>
+        </Animated.View>
       </View>
 
       {/* Capacity Progress Bar */}

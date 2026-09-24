@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
+import React, { useState, useRef } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Animated } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../theme/ThemeContext';
 import { useFeeder } from '../context/FeederContext';
@@ -9,8 +9,21 @@ export const FillScreen: React.FC = () => {
   const { status, isDispensing, dispenseStage, dispenseFood, lastResult } = useFeeder();
   const [fillTarget, setFillTarget] = useState<number>(250);
 
+  // Micro-animations for buttons
+  const minusScale = useRef(new Animated.Value(1)).current;
+  const plusScale = useRef(new Animated.Value(1)).current;
+  const executeScale = useRef(new Animated.Value(1)).current;
+
+  const animateBtn = (scaleVal: Animated.Value, action: () => void) => {
+    Animated.sequence([
+      Animated.timing(scaleVal, { toValue: 0.88, duration: 70, useNativeDriver: true }),
+      Animated.spring(scaleVal, { toValue: 1, friction: 4, tension: 50, useNativeDriver: true }),
+    ]).start();
+    action();
+  };
+
   const handleStartFill = () => {
-    dispenseFood(fillTarget, 'fill');
+    animateBtn(executeScale, () => dispenseFood(fillTarget, 'fill'));
   };
 
   const adjustTarget = (delta: number) => {
@@ -74,21 +87,25 @@ export const FillScreen: React.FC = () => {
           TARGET BOWL CAPACITY
         </Text>
 
-        {/* Stepper Controls */}
+        {/* Stepper Controls with tactile spring feedback */}
         <View style={styles.adjusterRow}>
           <TouchableOpacity
-            style={[
-              styles.adjustBtn,
-              {
-                backgroundColor: theme.surfaceLight,
-                borderColor: theme.borderLight,
-              },
-            ]}
-            onPress={() => adjustTarget(-25)}
+            onPress={() => animateBtn(minusScale, () => adjustTarget(-25))}
             disabled={isDispensing || fillTarget <= 100}
-            activeOpacity={0.7}
+            activeOpacity={0.8}
           >
-            <Ionicons name="remove" size={18} color={theme.textPrimary} />
+            <Animated.View
+              style={[
+                styles.adjustBtn,
+                {
+                  backgroundColor: theme.surfaceLight,
+                  borderColor: theme.borderLight,
+                  transform: [{ scale: minusScale }],
+                },
+              ]}
+            >
+              <Ionicons name="remove" size={18} color={theme.textPrimary} />
+            </Animated.View>
           </TouchableOpacity>
 
           <View style={styles.targetDisplay}>
@@ -104,18 +121,22 @@ export const FillScreen: React.FC = () => {
           </View>
 
           <TouchableOpacity
-            style={[
-              styles.adjustBtn,
-              {
-                backgroundColor: theme.surfaceLight,
-                borderColor: theme.borderLight,
-              },
-            ]}
-            onPress={() => adjustTarget(25)}
+            onPress={() => animateBtn(plusScale, () => adjustTarget(25))}
             disabled={isDispensing || fillTarget >= 350}
-            activeOpacity={0.7}
+            activeOpacity={0.8}
           >
-            <Ionicons name="add" size={18} color={theme.textPrimary} />
+            <Animated.View
+              style={[
+                styles.adjustBtn,
+                {
+                  backgroundColor: theme.surfaceLight,
+                  borderColor: theme.borderLight,
+                  transform: [{ scale: plusScale }],
+                },
+              ]}
+            >
+              <Ionicons name="add" size={18} color={theme.textPrimary} />
+            </Animated.View>
           </TouchableOpacity>
         </View>
 
@@ -134,11 +155,12 @@ export const FillScreen: React.FC = () => {
                       ? isDark
                         ? theme.primaryInteractive
                         : theme.primary
-                      : theme.borderLight,
+                      : 'transparent',
                   },
                 ]}
                 onPress={() => setFillTarget(val)}
                 disabled={isDispensing}
+                activeOpacity={0.7}
               >
                 <Text
                   style={[
@@ -183,15 +205,21 @@ export const FillScreen: React.FC = () => {
         ) : (
           <>
             <TouchableOpacity
-              style={[
-                styles.fillButton,
-                { backgroundColor: isDark ? theme.primaryInteractive : theme.primary },
-              ]}
               onPress={handleStartFill}
               activeOpacity={0.8}
             >
-              <Ionicons name="water" size={15} color="#FFF" style={{ marginRight: 6 }} />
-              <Text style={styles.fillButtonText}>Execute {fillTarget}g Fill</Text>
+              <Animated.View
+                style={[
+                  styles.fillButton,
+                  {
+                    backgroundColor: isDark ? theme.primaryInteractive : theme.primary,
+                    transform: [{ scale: executeScale }],
+                  },
+                ]}
+              >
+                <Ionicons name="water" size={15} color="#FFF" style={{ marginRight: 6 }} />
+                <Text style={styles.fillButtonText}>Execute {fillTarget}g Fill</Text>
+              </Animated.View>
             </TouchableOpacity>
 
             {lastResult && lastResult.status === 'success' && (

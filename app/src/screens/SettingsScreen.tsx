@@ -123,7 +123,7 @@ export const SettingsScreen: React.FC = () => {
             </Text>
           </TouchableOpacity>
 
-          {/* Light Theme Option: Porcelain & Imperial Pine */}
+          {/* Light Theme Option: Cream White & Brown Tonic */}
           <TouchableOpacity
             style={[
               styles.themeOptionBtn,
@@ -139,8 +139,8 @@ export const SettingsScreen: React.FC = () => {
           >
             <View style={styles.themeHeaderRow}>
               <View style={styles.themeSwatchRow}>
-                <View style={[styles.colorCircle, { backgroundColor: '#F8F9F8', borderWidth: 1, borderColor: '#D0D5D2' }]} />
-                <View style={[styles.colorCircle, { backgroundColor: '#1F4733' }]} />
+                <View style={[styles.colorCircle, { backgroundColor: '#FBF9F5', borderWidth: 1, borderColor: '#D9D0C3' }]} />
+                <View style={[styles.colorCircle, { backgroundColor: '#5C3A21' }]} />
               </View>
               {!isDark && (
                 <Ionicons name="checkmark-circle" size={16} color={theme.primary} />
@@ -152,10 +152,10 @@ export const SettingsScreen: React.FC = () => {
                 { color: !isDark ? theme.primary : theme.textPrimary },
               ]}
             >
-              Porcelain & Pine
+              Cream & Tonic
             </Text>
             <Text style={[styles.themeOptionDesc, { color: theme.textMuted }]}>
-              Alabaster & imperial pine
+              Cream white & brown tonic
             </Text>
           </TouchableOpacity>
         </View>
@@ -226,12 +226,19 @@ export const SettingsScreen: React.FC = () => {
             styles.inputContainer,
             {
               backgroundColor: theme.surfaceLight,
-              borderColor: theme.borderLight,
             },
           ]}
         >
           <TextInput
-            style={[styles.textInput, { color: theme.textPrimary }]}
+            style={[
+              styles.textInput,
+              {
+                color: theme.textPrimary,
+                borderWidth: 0,
+                outlineWidth: 0,
+                outlineStyle: 'none',
+              } as any,
+            ]}
             value={ipInput}
             onChangeText={setIpInput}
             placeholder="192.168.1.105"
@@ -346,9 +353,11 @@ export const SettingsScreen: React.FC = () => {
                   styles.weightInput,
                   {
                     backgroundColor: theme.surface,
-                    borderColor: theme.borderLight,
                     color: theme.textPrimary,
-                  },
+                    borderWidth: 0,
+                    outlineWidth: 0,
+                    outlineStyle: 'none',
+                  } as any,
                 ]}
                 value={knownWeight}
                 onChangeText={setKnownWeight}
@@ -550,7 +559,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     borderRadius: 12,
-    borderWidth: 1,
+    borderWidth: 0,
     paddingHorizontal: 12,
     marginTop: 10,
   },
@@ -559,6 +568,7 @@ const styles = StyleSheet.create({
     paddingVertical: 9,
     fontSize: 13,
     fontFamily: 'monospace',
+    borderWidth: 0,
   },
   saveIpBtn: {
     paddingHorizontal: 12,
@@ -632,9 +642,9 @@ const styles = StyleSheet.create({
   },
   weightInput: {
     borderRadius: 6,
-    borderWidth: 1,
+    borderWidth: 0,
     paddingHorizontal: 8,
-    paddingVertical: 3,
+    paddingVertical: 4,
     fontWeight: '700',
     fontSize: 12,
     width: 55,

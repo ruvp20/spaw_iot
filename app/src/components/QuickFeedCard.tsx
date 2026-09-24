@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Modal, TextInput } from 'react-native';
+import React, { useState, useRef } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Modal, TextInput, Animated } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../theme/ThemeContext';
 import { useFeeder } from '../context/FeederContext';
@@ -9,6 +9,20 @@ export const QuickFeedCard: React.FC = () => {
   const { dispenseFood, isDispensing } = useFeeder();
   const [modalVisible, setModalVisible] = useState(false);
   const [customInput, setCustomInput] = useState('35');
+
+  // Interactive button scales
+  const btn20Scale = useRef(new Animated.Value(1)).current;
+  const btn40Scale = useRef(new Animated.Value(1)).current;
+  const btn60Scale = useRef(new Animated.Value(1)).current;
+  const btnCustomScale = useRef(new Animated.Value(1)).current;
+
+  const animatePress = (scaleVal: Animated.Value, callback: () => void) => {
+    Animated.sequence([
+      Animated.timing(scaleVal, { toValue: 0.92, duration: 80, useNativeDriver: true }),
+      Animated.spring(scaleVal, { toValue: 1, friction: 4, tension: 50, useNativeDriver: true }),
+    ]).start();
+    callback();
+  };
 
   const handleCustomSubmit = () => {
     const parsed = parseInt(customInput, 10);
@@ -53,110 +67,130 @@ export const QuickFeedCard: React.FC = () => {
         </View>
       </View>
 
-      {/* Grid of 4 portion buttons */}
+      {/* Grid of 4 portion buttons with tactile scale animations */}
       <View style={styles.buttonsGrid}>
         {/* 20g Snack */}
         <TouchableOpacity
-          style={[
-            styles.feedBtn,
-            {
-              backgroundColor: theme.surfaceLight,
-              borderColor: theme.borderLight,
-            },
-          ]}
-          onPress={() => dispenseFood(20)}
+          onPress={() => animatePress(btn20Scale, () => dispenseFood(20))}
           disabled={isDispensing}
-          activeOpacity={0.7}
+          activeOpacity={0.8}
+          style={styles.feedBtnWrapper}
         >
-          <Text style={[styles.btnAmount, { color: theme.textPrimary }]}>20g</Text>
-          <Text style={[styles.btnLabel, { color: theme.textMuted }]}>Snack</Text>
+          <Animated.View
+            style={[
+              styles.feedBtn,
+              {
+                backgroundColor: theme.surfaceLight,
+                borderColor: theme.borderLight,
+                transform: [{ scale: btn20Scale }],
+              },
+            ]}
+          >
+            <Text style={[styles.btnAmount, { color: theme.textPrimary }]}>20g</Text>
+            <Text style={[styles.btnLabel, { color: theme.textMuted }]}>Snack</Text>
+          </Animated.View>
         </TouchableOpacity>
 
-        {/* 40g Standard - subtly highlighted */}
+        {/* 40g Standard - highlighted */}
         <TouchableOpacity
-          style={[
-            styles.feedBtn,
-            styles.feedBtnRecommended,
-            {
-              backgroundColor: theme.primaryTint,
-              borderColor: isDark ? theme.primaryInteractive : theme.primary,
-            },
-          ]}
-          onPress={() => dispenseFood(40)}
+          onPress={() => animatePress(btn40Scale, () => dispenseFood(40))}
           disabled={isDispensing}
-          activeOpacity={0.7}
+          activeOpacity={0.8}
+          style={styles.feedBtnWrapper}
         >
-          <View style={styles.recBadge}>
+          <Animated.View
+            style={[
+              styles.feedBtn,
+              styles.feedBtnRecommended,
+              {
+                backgroundColor: theme.primaryTint,
+                borderColor: isDark ? theme.primaryInteractive : theme.primary,
+                transform: [{ scale: btn40Scale }],
+              },
+            ]}
+          >
+            <View style={styles.recBadge}>
+              <Text
+                style={[
+                  styles.recBadgeText,
+                  { color: isDark ? theme.primaryInteractive : theme.primary },
+                ]}
+              >
+                Meal
+              </Text>
+            </View>
             <Text
               style={[
-                styles.recBadgeText,
+                styles.btnAmount,
                 { color: isDark ? theme.primaryInteractive : theme.primary },
               ]}
             >
-              Meal
+              40g
             </Text>
-          </View>
-          <Text
-            style={[
-              styles.btnAmount,
-              { color: isDark ? theme.primaryInteractive : theme.primary },
-            ]}
-          >
-            40g
-          </Text>
-          <Text
-            style={[
-              styles.btnLabel,
-              { color: isDark ? theme.primaryInteractive : theme.primary },
-            ]}
-          >
-            Standard
-          </Text>
+            <Text
+              style={[
+                styles.btnLabel,
+                { color: isDark ? theme.primaryInteractive : theme.primary },
+              ]}
+            >
+              Standard
+            </Text>
+          </Animated.View>
         </TouchableOpacity>
 
         {/* 60g Generous */}
         <TouchableOpacity
-          style={[
-            styles.feedBtn,
-            {
-              backgroundColor: theme.surfaceLight,
-              borderColor: theme.borderLight,
-            },
-          ]}
-          onPress={() => dispenseFood(60)}
+          onPress={() => animatePress(btn60Scale, () => dispenseFood(60))}
           disabled={isDispensing}
-          activeOpacity={0.7}
+          activeOpacity={0.8}
+          style={styles.feedBtnWrapper}
         >
-          <Text style={[styles.btnAmount, { color: theme.textPrimary }]}>60g</Text>
-          <Text style={[styles.btnLabel, { color: theme.textMuted }]}>Generous</Text>
+          <Animated.View
+            style={[
+              styles.feedBtn,
+              {
+                backgroundColor: theme.surfaceLight,
+                borderColor: theme.borderLight,
+                transform: [{ scale: btn60Scale }],
+              },
+            ]}
+          >
+            <Text style={[styles.btnAmount, { color: theme.textPrimary }]}>60g</Text>
+            <Text style={[styles.btnLabel, { color: theme.textMuted }]}>Generous</Text>
+          </Animated.View>
         </TouchableOpacity>
 
         {/* Custom */}
         <TouchableOpacity
-          style={[
-            styles.feedBtn,
-            {
-              backgroundColor: theme.surfaceLight,
-              borderColor: theme.borderLight,
-            },
-          ]}
-          onPress={() => setModalVisible(true)}
+          onPress={() => animatePress(btnCustomScale, () => setModalVisible(true))}
           disabled={isDispensing}
-          activeOpacity={0.7}
+          activeOpacity={0.8}
+          style={styles.feedBtnWrapper}
         >
-          <Ionicons
-            name="options-outline"
-            size={16}
-            color={theme.textSecondary}
-            style={{ marginBottom: 2 }}
-          />
-          <Text style={[styles.btnLabel, { color: theme.textSecondary, fontWeight: '600' }]}>
-            Custom
-          </Text>
+          <Animated.View
+            style={[
+              styles.feedBtn,
+              {
+                backgroundColor: theme.surfaceLight,
+                borderColor: theme.borderLight,
+                transform: [{ scale: btnCustomScale }],
+              },
+            ]}
+          >
+            <Ionicons
+              name="options-outline"
+              size={16}
+              color={theme.textSecondary}
+              style={{ marginBottom: 2 }}
+            />
+            <Text style={[styles.btnLabel, { color: theme.textSecondary, fontWeight: '600' }]}>
+              Custom
+            </Text>
+          </Animated.View>
         </TouchableOpacity>
       </View>
 
-      {/* Refined Custom Grams Modal */}
+      {/* Refined Custom Grams Modal with BORDERLESS input */}
       <Modal
         visible={modalVisible}
         transparent
@@ -190,18 +224,25 @@ export const QuickFeedCard: React.FC = () => {
               </TouchableOpacity>
             </View>
 
-            {/* Numeric Input Row */}
+            {/* BORDERLESS Numeric Input Row */}
             <View
               style={[
                 styles.inputRow,
                 {
-                  backgroundColor: theme.surface,
-                  borderColor: theme.borderLight,
+                  backgroundColor: theme.surfaceLight,
                 },
               ]}
             >
               <TextInput
-                style={[styles.input, { color: theme.textPrimary }]}
+                style={[
+                  styles.input,
+                  {
+                    color: theme.textPrimary,
+                    borderWidth: 0,
+                    outlineWidth: 0,
+                    outlineStyle: 'none',
+                  } as any,
+                ]}
                 value={customInput}
                 onChangeText={setCustomInput}
                 keyboardType="numeric"
@@ -228,7 +269,7 @@ export const QuickFeedCard: React.FC = () => {
                           ? isDark
                             ? theme.primaryInteractive
                             : theme.primary
-                          : theme.borderLight,
+                          : 'transparent',
                       },
                     ]}
                     onPress={() => handleQuickPreset(val)}
@@ -325,8 +366,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 8,
   },
-  feedBtn: {
+  feedBtnWrapper: {
     flex: 1,
+  },
+  feedBtn: {
     paddingVertical: 12,
     borderRadius: 12,
     alignItems: 'center',
@@ -392,16 +435,17 @@ const styles = StyleSheet.create({
   inputRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderRadius: 12,
-    borderWidth: 1,
+    borderRadius: 14,
+    borderWidth: 0, // BORDERLESS
     paddingHorizontal: 16,
-    marginBottom: 14,
+    marginBottom: 16,
   },
   input: {
     flex: 1,
     paddingVertical: 12,
     fontSize: 26,
     fontWeight: '800',
+    borderWidth: 0, // BORDERLESS
   },
   inputSuffix: {
     fontSize: 14,
