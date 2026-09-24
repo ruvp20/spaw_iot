@@ -6,13 +6,13 @@ import { useFeeder } from '../context/FeederContext';
 
 export const WeightGauge: React.FC = () => {
   const { theme, isDark } = useTheme();
-  const { status, isDispensing, dispenseStage, activeTargetGrams, tareScale } = useFeeder();
+  const { status, isDispensing, dispenseStage, activeTargetGrams, tareScale, bowlCapacity } = useFeeder();
   const { width } = useWindowDimensions();
   const isSmallMobile = width < 360;
   const isNarrow = width < 420;
   const isTabletOrDesktop = width >= 768;
 
-  const maxCapacity = 300;
+  const maxCapacity = bowlCapacity || 400;
   const percentage = Math.min(100, Math.max(0, (status.weight / maxCapacity) * 100));
 
   // Animations

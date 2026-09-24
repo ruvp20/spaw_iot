@@ -1,18 +1,26 @@
-import React, { useState, useRef } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Animated, useWindowDimensions } from 'react-native';
+import React, { useRef } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Animated, TextInput, Alert, useWindowDimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../theme/ThemeContext';
 import { useFeeder } from '../context/FeederContext';
 
 export const FillScreen: React.FC = () => {
   const { theme, isDark } = useTheme();
-  const { status, isDispensing, dispenseStage, dispenseFood, lastResult } = useFeeder();
+  const {
+    status,
+    isDispensing,
+    dispenseStage,
+    dispenseFood,
+    lastResult,
+    fillTarget,
+    setFillTarget,
+    bowlCapacity,
+  } = useFeeder();
+  const maxCapacity = bowlCapacity || 400;
   const { width } = useWindowDimensions();
   const isSmallMobile = width < 360;
   const isNarrow = width < 420;
   const isTabletOrDesktop = width >= 768;
-
-  const [fillTarget, setFillTarget] = useState<number>(250);
 
   // Micro-animations for buttons
   const minusScale = useRef(new Animated.Value(1)).current;
@@ -28,17 +36,30 @@ export const FillScreen: React.FC = () => {
   };
 
   const handleStartFill = () => {
+    if (fillTarget <= 0) {
+      Alert.alert('Invalid Target', 'Please enter a target bowl fill capacity greater than 0g.');
+      return;
+    }
     animateBtn(executeScale, () => dispenseFood(fillTarget, 'fill'));
   };
 
   const adjustTarget = (delta: number) => {
-    const next = fillTarget + delta;
-    if (next >= 100 && next <= 350) {
-      setFillTarget(next);
-    }
+    const next = Math.max(0, Math.min(maxCapacity, fillTarget + delta));
+    setFillTarget(next);
   };
 
-  const presets = [150, 200, 250, 300];
+  const handleDirectTargetChange = (text: string) => {
+    const digitsOnly = text.replace(/[^0-9]/g, '');
+    const num = digitsOnly === '' ? 0 : parseInt(digitsOnly, 10);
+    setFillTarget(Math.min(maxCapacity, num));
+  };
+
+  const presets = [
+    Math.round(maxCapacity * 0.25),
+    Math.round(maxCapacity * 0.5),
+    Math.round(maxCapacity * 0.75),
+    maxCapacity,
+  ];
 
   const cardResponsiveStyle = {
     padding: isSmallMobile ? 14 : isNarrow ? 16 : isTabletOrDesktop ? 22 : 18,
@@ -108,11 +129,11 @@ export const FillScreen: React.FC = () => {
             TARGET BOWL CAPACITY
           </Text>
 
-          {/* Stepper Controls with tactile spring feedback */}
+          {/* Stepper Controls with Direct Input & tactile feedback */}
           <View style={[styles.adjusterRow, { gap: isSmallMobile ? 12 : 20 }]}>
             <TouchableOpacity
               onPress={() => animateBtn(minusScale, () => adjustTarget(-25))}
-              disabled={isDispensing || fillTarget <= 100}
+              disabled={isDispensing || fillTarget <= 0}
               activeOpacity={0.8}
             >
               <Animated.View
@@ -124,6 +145,7 @@ export const FillScreen: React.FC = () => {
                     width: isSmallMobile ? 38 : 42,
                     height: isSmallMobile ? 38 : 42,
                     borderRadius: isSmallMobile ? 19 : 21,
+                    opacity: fillTarget <= 0 ? 0.4 : 1,
                     transform: [{ scale: minusScale }],
                   },
                 ]}
@@ -134,24 +156,35 @@ export const FillScreen: React.FC = () => {
 
             <View style={styles.targetDisplay}>
               <View style={styles.numberRow}>
-                <Text
+                <TextInput
                   style={[
-                    styles.targetNumber,
-                    { color: theme.textPrimary, fontSize: isSmallMobile ? 38 : 46 },
+                    styles.targetInput,
+                    {
+                      color: theme.textPrimary,
+                      fontSize: isSmallMobile ? 38 : 46,
+                      borderWidth: 0,
+                      outlineWidth: 0,
+                      outlineStyle: 'none',
+                    } as any,
                   ]}
-                >
-                  {fillTarget}
-                </Text>
+                  value={String(fillTarget)}
+                  onChangeText={handleDirectTargetChange}
+                  keyboardType="number-pad"
+                  inputMode="numeric"
+                  maxLength={3}
+                  placeholder="0"
+                  placeholderTextColor={theme.textDisabled}
+                />
                 <Text style={[styles.targetUnit, { color: theme.textMuted }]}>g</Text>
               </View>
               <Text style={[styles.targetGramsLabel, { color: theme.textMuted }]}>
-                Gram Target
+                Tap to type or use +/-
               </Text>
             </View>
 
             <TouchableOpacity
               onPress={() => animateBtn(plusScale, () => adjustTarget(25))}
-              disabled={isDispensing || fillTarget >= 350}
+              disabled={isDispensing || fillTarget >= maxCapacity}
               activeOpacity={0.8}
             >
               <Animated.View
@@ -173,7 +206,7 @@ export const FillScreen: React.FC = () => {
           </View>
 
           {/* Quick Target Presets */}
-          <View style={[styles.presetsRow, { gap: isSmallMobile ? 6 : 8 }]}>
+          <View style={[styles.presetsRow, { gap: isSmallMobile ? 4 : 6 }]}>
             {presets.map((val) => {
               const isSelected = fillTarget === val;
               return (
@@ -204,7 +237,7 @@ export const FillScreen: React.FC = () => {
                             ? theme.primaryInteractive
                             : theme.primary
                           : theme.textSecondary,
-                        fontSize: isSmallMobile ? 11 : 12,
+                        fontSize: isSmallMobile ? 10 : 11,
                       },
                     ]}
                   >
@@ -254,7 +287,9 @@ export const FillScreen: React.FC = () => {
                   ]}
                 >
                   <Ionicons name="water" size={15} color="#FFF" style={{ marginRight: 6 }} />
-                  <Text style={styles.fillButtonText}>Execute {fillTarget}g Fill</Text>
+                  <Text style={styles.fillButtonText}>
+                    {fillTarget > 0 ? `Execute ${fillTarget}g Fill` : 'Set Target to Fill'}
+                  </Text>
                 </Animated.View>
               </TouchableOpacity>
 
@@ -440,15 +475,20 @@ const styles = StyleSheet.create({
   },
   targetDisplay: {
     alignItems: 'center',
-    minWidth: 110,
+    minWidth: 120,
   },
   numberRow: {
     flexDirection: 'row',
     alignItems: 'baseline',
+    justifyContent: 'center',
   },
-  targetNumber: {
+  targetInput: {
     fontWeight: '800',
     letterSpacing: -1,
+    textAlign: 'center',
+    minWidth: 60,
+    padding: 0,
+    margin: 0,
   },
   targetUnit: {
     fontSize: 16,

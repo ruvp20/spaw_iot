@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
   Text,
@@ -10,35 +10,74 @@ import {
   Alert,
   useWindowDimensions,
 } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../theme/ThemeContext';
 import { useFeeder } from '../context/FeederContext';
 
+const STORAGE_KEY_SPRINT_GRAMS = '@spaw_sprint_grams_input';
+const STORAGE_KEY_SPRINT_INTERVAL = '@spaw_sprint_interval_input';
+const STORAGE_KEY_SPRINT_FEEDS = '@spaw_sprint_feeds_input';
+
 export const SprintScreen: React.FC = () => {
   const { theme, isDark } = useTheme();
-  const { sprint, saveSprint, cancelSprint } = useFeeder();
+  const { sprint, saveSprint, cancelSprint, bowlCapacity } = useFeeder();
   const { width } = useWindowDimensions();
   const isSmallMobile = width < 360;
   const isNarrow = width < 420;
   const isTabletOrDesktop = width >= 768;
 
-  // Controlled input strings for direct typing
-  const [gramsInput, setGramsInput] = useState<string>(String(sprint.grams || 50));
-  const [intervalInput, setIntervalInput] = useState<string>(String(sprint.intervalHours || 4));
-  const [feedsInput, setFeedsInput] = useState<string>(String(sprint.totalFeeds || 4));
+  // Controlled input strings for direct typing, defaulting to '0'
+  const [gramsInput, setGramsInput] = useState<string>(sprint.grams ? String(sprint.grams) : '0');
+  const [intervalInput, setIntervalInput] = useState<string>(sprint.intervalHours ? String(sprint.intervalHours) : '0');
+  const [feedsInput, setFeedsInput] = useState<string>(sprint.totalFeeds ? String(sprint.totalFeeds) : '0');
   const [isSaving, setIsSaving] = useState<boolean>(false);
+
+  // Load saved user inputs on mount
+  useEffect(() => {
+    (async () => {
+      try {
+        const savedG = await AsyncStorage.getItem(STORAGE_KEY_SPRINT_GRAMS);
+        const savedI = await AsyncStorage.getItem(STORAGE_KEY_SPRINT_INTERVAL);
+        const savedF = await AsyncStorage.getItem(STORAGE_KEY_SPRINT_FEEDS);
+
+        if (savedG !== null) setGramsInput(savedG);
+        else if (sprint.grams > 0) setGramsInput(String(sprint.grams));
+        else setGramsInput('0');
+
+        if (savedI !== null) setIntervalInput(savedI);
+        else if (sprint.intervalHours > 0) setIntervalInput(String(sprint.intervalHours));
+        else setIntervalInput('0');
+
+        if (savedF !== null) setFeedsInput(savedF);
+        else if (sprint.totalFeeds > 0) setFeedsInput(String(sprint.totalFeeds));
+        else setFeedsInput('0');
+      } catch (e) {
+        console.warn('Error loading sprint inputs', e);
+      }
+    })();
+  }, [sprint.grams, sprint.intervalHours, sprint.totalFeeds]);
 
   // Numbers-only sanitizers (strictly no characters, no punctuation, no special characters)
   const handleGramsChange = (text: string) => {
-    setGramsInput(text.replace(/[^0-9]/g, ''));
+    const digitsOnly = text.replace(/[^0-9]/g, '');
+    const sanitized = digitsOnly === '' ? '0' : digitsOnly.replace(/^0+(?=\d)/, '');
+    setGramsInput(sanitized);
+    AsyncStorage.setItem(STORAGE_KEY_SPRINT_GRAMS, sanitized).catch(() => {});
   };
 
   const handleIntervalChange = (text: string) => {
-    setIntervalInput(text.replace(/[^0-9]/g, ''));
+    const digitsOnly = text.replace(/[^0-9]/g, '');
+    const sanitized = digitsOnly === '' ? '0' : digitsOnly.replace(/^0+(?=\d)/, '');
+    setIntervalInput(sanitized);
+    AsyncStorage.setItem(STORAGE_KEY_SPRINT_INTERVAL, sanitized).catch(() => {});
   };
 
   const handleFeedsChange = (text: string) => {
-    setFeedsInput(text.replace(/[^0-9]/g, ''));
+    const digitsOnly = text.replace(/[^0-9]/g, '');
+    const sanitized = digitsOnly === '' ? '0' : digitsOnly.replace(/^0+(?=\d)/, '');
+    setFeedsInput(sanitized);
+    AsyncStorage.setItem(STORAGE_KEY_SPRINT_FEEDS, sanitized).catch(() => {});
   };
 
   const saveScale = useRef(new Animated.Value(1)).current;
@@ -49,15 +88,16 @@ export const SprintScreen: React.FC = () => {
     const i = parseInt(intervalInput, 10);
     const f = parseInt(feedsInput, 10);
 
-    if (isNaN(g) || g < 5 || g > 300) {
-      Alert.alert('Invalid Portion', 'Portion size must be between 5g and 300g.');
+    const maxPortion = bowlCapacity || 400;
+    if (isNaN(g) || g <= 0 || g > maxPortion) {
+      Alert.alert('Invalid Portion', `Portion size must be between 1g and ${maxPortion}g.`);
       return;
     }
-    if (isNaN(i) || i < 1 || i > 48) {
+    if (isNaN(i) || i <= 0 || i > 48) {
       Alert.alert('Invalid Interval', 'Interval must be between 1 and 48 hours.');
       return;
     }
-    if (isNaN(f) || f < 1 || f > 24) {
+    if (isNaN(f) || f <= 0 || f > 24) {
       Alert.alert('Invalid Cycles', 'Number of feeds must be between 1 and 24.');
       return;
     }
@@ -69,6 +109,7 @@ export const SprintScreen: React.FC = () => {
     setIsSaving(true);
     try {
       await saveSprint(g, i, f);
+      Alert.alert('Schedule Saved', `Autonomous cycle set to ${g}g every ${i}h for ${f} feeds.`);
     } catch (e) {
       console.warn('Error saving sprint', e);
     } finally {
@@ -84,11 +125,14 @@ export const SprintScreen: React.FC = () => {
     await cancelSprint();
   };
 
-  const parsedGrams = parseInt(gramsInput, 10) || 50;
-  const parsedInterval = parseInt(intervalInput, 10) || 4;
-  const parsedFeeds = parseInt(feedsInput, 10) || 4;
+  const parsedGrams = parseInt(gramsInput, 10) || 0;
+  const parsedInterval = parseInt(intervalInput, 10) || 0;
+  const parsedFeeds = parseInt(feedsInput, 10) || 0;
 
   const getTimelinePreviews = () => {
+    if (parsedGrams <= 0 || parsedInterval <= 0 || parsedFeeds <= 0) {
+      return [];
+    }
     const now = Date.now();
     const list = [];
     const count = Math.min(parsedFeeds, 12);
@@ -236,7 +280,7 @@ export const SprintScreen: React.FC = () => {
               keyboardType="number-pad"
               inputMode="numeric"
               maxLength={3}
-              placeholder="50"
+              placeholder="0"
               placeholderTextColor={theme.textDisabled}
             />
             <Text style={[styles.inputSuffix, { color: theme.textMuted }]}>gms</Text>
@@ -260,7 +304,11 @@ export const SprintScreen: React.FC = () => {
                       paddingVertical: isSmallMobile ? 5 : 6,
                     },
                   ]}
-                  onPress={() => setGramsInput(String(val))}
+                  onPress={() => {
+                    const str = String(val);
+                    setGramsInput(str);
+                    AsyncStorage.setItem(STORAGE_KEY_SPRINT_GRAMS, str).catch(() => {});
+                  }}
                 >
                   <Text
                     style={[
@@ -303,7 +351,7 @@ export const SprintScreen: React.FC = () => {
               keyboardType="number-pad"
               inputMode="numeric"
               maxLength={2}
-              placeholder="4"
+              placeholder="0"
               placeholderTextColor={theme.textDisabled}
             />
             <Text style={[styles.inputSuffix, { color: theme.textMuted }]}>hrs</Text>
@@ -327,7 +375,11 @@ export const SprintScreen: React.FC = () => {
                       paddingVertical: isSmallMobile ? 5 : 6,
                     },
                   ]}
-                  onPress={() => setIntervalInput(String(val))}
+                  onPress={() => {
+                    const str = String(val);
+                    setIntervalInput(str);
+                    AsyncStorage.setItem(STORAGE_KEY_SPRINT_INTERVAL, str).catch(() => {});
+                  }}
                 >
                   <Text
                     style={[
@@ -370,7 +422,7 @@ export const SprintScreen: React.FC = () => {
               keyboardType="number-pad"
               inputMode="numeric"
               maxLength={2}
-              placeholder="4"
+              placeholder="0"
               placeholderTextColor={theme.textDisabled}
             />
             <Text style={[styles.inputSuffix, { color: theme.textMuted }]}>cycles</Text>
@@ -394,7 +446,11 @@ export const SprintScreen: React.FC = () => {
                       paddingVertical: isSmallMobile ? 5 : 6,
                     },
                   ]}
-                  onPress={() => setFeedsInput(String(val))}
+                  onPress={() => {
+                    const str = String(val);
+                    setFeedsInput(str);
+                    AsyncStorage.setItem(STORAGE_KEY_SPRINT_FEEDS, str).catch(() => {});
+                  }}
                 >
                   <Text
                     style={[
@@ -457,45 +513,51 @@ export const SprintScreen: React.FC = () => {
           <Text style={[styles.timelineTitle, { color: theme.textPrimary }]}>
             Calculated Timeline
           </Text>
-          {timeline.map((item, idx) => (
-            <View
-              key={item.num}
-              style={[
-                styles.timelineRow,
-                { borderBottomColor: theme.borderLight },
-                idx === timeline.length - 1 && { borderBottomWidth: 0 },
-              ]}
-            >
+          {timeline.length === 0 ? (
+            <Text style={[styles.emptyTimelineText, { color: theme.textMuted }]}>
+              Enter portion size, interval hours, and feed cycles above to preview the calculated feed schedule.
+            </Text>
+          ) : (
+            timeline.map((item, idx) => (
               <View
+                key={item.num}
                 style={[
-                  styles.timelineDot,
-                  { backgroundColor: isDark ? theme.primaryInteractive : theme.primary },
-                ]}
-              />
-              <Text
-                style={[
-                  styles.timelineFeedName,
-                  { color: theme.textPrimary, width: isSmallMobile ? 65 : 75, fontSize: isSmallMobile ? 11 : 12 },
+                  styles.timelineRow,
+                  { borderBottomColor: theme.borderLight },
+                  idx === timeline.length - 1 && { borderBottomWidth: 0 },
                 ]}
               >
-                Feed #{item.num}
-              </Text>
-              <Text style={[styles.timelineGrams, { color: theme.textMuted, fontSize: isSmallMobile ? 11 : 12 }]}>
-                {parsedGrams} gms
-              </Text>
-              <Text
-                style={[
-                  styles.timelineTime,
-                  {
-                    color: isDark ? theme.primaryInteractive : theme.primary,
-                    fontSize: isSmallMobile ? 11 : 12,
-                  },
-                ]}
-              >
-                {item.time}
-              </Text>
-            </View>
-          ))}
+                <View
+                  style={[
+                    styles.timelineDot,
+                    { backgroundColor: isDark ? theme.primaryInteractive : theme.primary },
+                  ]}
+                />
+                <Text
+                  style={[
+                    styles.timelineFeedName,
+                    { color: theme.textPrimary, width: isSmallMobile ? 65 : 75, fontSize: isSmallMobile ? 11 : 12 },
+                  ]}
+                >
+                  Feed #{item.num}
+                </Text>
+                <Text style={[styles.timelineGrams, { color: theme.textMuted, fontSize: isSmallMobile ? 11 : 12 }]}>
+                  {parsedGrams} gms
+                </Text>
+                <Text
+                  style={[
+                    styles.timelineTime,
+                    {
+                      color: isDark ? theme.primaryInteractive : theme.primary,
+                      fontSize: isSmallMobile ? 11 : 12,
+                    },
+                  ]}
+                >
+                  {item.time}
+                </Text>
+              </View>
+            ))
+          )}
         </View>
       </View>
     </ScrollView>
@@ -660,6 +722,12 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '700',
     marginBottom: 10,
+  },
+  emptyTimelineText: {
+    fontSize: 11,
+    lineHeight: 16,
+    fontStyle: 'italic',
+    paddingVertical: 8,
   },
   timelineRow: {
     flexDirection: 'row',

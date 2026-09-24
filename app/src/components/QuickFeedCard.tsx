@@ -1,19 +1,39 @@
-import React, { useState, useRef } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Modal, TextInput, Animated, useWindowDimensions } from 'react-native';
+import React, { useState, useRef, useEffect } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Modal, TextInput, Animated, Alert, useWindowDimensions } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../theme/ThemeContext';
 import { useFeeder } from '../context/FeederContext';
 
+const STORAGE_KEY_CUSTOM_PORTION = '@spaw_quick_custom_grams';
+
 export const QuickFeedCard: React.FC = () => {
   const { theme, isDark } = useTheme();
-  const { dispenseFood, isDispensing } = useFeeder();
+  const { dispenseFood, isDispensing, bowlCapacity } = useFeeder();
   const { width } = useWindowDimensions();
   const isSmallMobile = width < 360;
   const isNarrow = width < 420;
   const isTabletOrDesktop = width >= 768;
 
   const [modalVisible, setModalVisible] = useState(false);
-  const [customInput, setCustomInput] = useState('35');
+  // Default to 0 by default, saved from user input
+  const [customInput, setCustomInput] = useState('0');
+
+  // Load saved custom input on mount
+  useEffect(() => {
+    (async () => {
+      try {
+        const saved = await AsyncStorage.getItem(STORAGE_KEY_CUSTOM_PORTION);
+        if (saved !== null) {
+          setCustomInput(saved);
+        } else {
+          setCustomInput('0');
+        }
+      } catch (e) {
+        console.warn('Error loading custom portion', e);
+      }
+    })();
+  }, []);
 
   // Interactive button scales
   const btn20Scale = useRef(new Animated.Value(1)).current;
@@ -32,19 +52,30 @@ export const QuickFeedCard: React.FC = () => {
   const handleCustomInputChange = (text: string) => {
     // Strictly allow numbers only (no characters, no punctuation, no negative signs, no spaces)
     const digitsOnly = text.replace(/[^0-9]/g, '');
-    setCustomInput(digitsOnly);
+    const sanitized = digitsOnly === '' ? '0' : digitsOnly.replace(/^0+(?=\d)/, '');
+    setCustomInput(sanitized);
+    AsyncStorage.setItem(STORAGE_KEY_CUSTOM_PORTION, sanitized).catch(() => {});
   };
 
   const handleCustomSubmit = () => {
     const parsed = parseInt(customInput, 10);
-    if (!isNaN(parsed) && parsed >= 5 && parsed <= 300) {
-      setModalVisible(false);
-      dispenseFood(parsed);
+    const maxPortion = bowlCapacity || 400;
+    if (isNaN(parsed) || parsed <= 0) {
+      Alert.alert('Invalid Portion', 'Please enter a target portion greater than 0g.');
+      return;
     }
+    if (parsed > maxPortion) {
+      Alert.alert('Capacity Exceeded', `Target portion cannot exceed bowl capacity of ${maxPortion}g.`);
+      return;
+    }
+    setModalVisible(false);
+    dispenseFood(parsed);
   };
 
   const handleQuickPreset = (val: number) => {
-    setCustomInput(String(val));
+    const strVal = String(val);
+    setCustomInput(strVal);
+    AsyncStorage.setItem(STORAGE_KEY_CUSTOM_PORTION, strVal).catch(() => {});
   };
 
   return (
@@ -282,7 +313,7 @@ export const QuickFeedCard: React.FC = () => {
                   Custom Portion
                 </Text>
                 <Text style={[styles.modalSubtitle, { color: theme.textMuted }]}>
-                  Specify exact target grams (5g – 300g)
+                  Specify target grams (max {bowlCapacity || 400}g)
                 </Text>
               </View>
               <TouchableOpacity

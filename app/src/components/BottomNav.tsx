@@ -23,7 +23,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({ currentTab, onSelectTab })
     iconActive: keyof typeof Ionicons.glyphMap;
   }[] = [
     { key: 'home', label: 'Feeder', icon: 'paw-outline', iconActive: 'paw' },
-    { key: 'fill', label: 'Fill 250g', icon: 'water-outline', iconActive: 'water' },
+    { key: 'fill', label: 'Bowl Fill', icon: 'water-outline', iconActive: 'water' },
     { key: 'sprint', label: 'Schedule', icon: 'calendar-outline', iconActive: 'calendar' },
     { key: 'history', label: 'Logs', icon: 'stats-chart-outline', iconActive: 'stats-chart' },
     { key: 'settings', label: 'Settings', icon: 'options-outline', iconActive: 'options' },

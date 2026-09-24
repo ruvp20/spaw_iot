@@ -13,7 +13,7 @@ interface HomeScreenProps {
 
 export const HomeScreen: React.FC<HomeScreenProps> = ({ onNavigateToSprint, onNavigateToFill }) => {
   const { theme, isDark } = useTheme();
-  const { sprint, status, executeFill, isDispensing } = useFeeder();
+  const { sprint, status, executeFill, isDispensing, fillTarget } = useFeeder();
   const { width } = useWindowDimensions();
   const isSmallMobile = width < 360;
   const isNarrow = width < 420;
@@ -26,7 +26,11 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onNavigateToSprint, onNa
       Animated.timing(fillBtnScale, { toValue: 0.90, duration: 70, useNativeDriver: true }),
       Animated.spring(fillBtnScale, { toValue: 1, friction: 4, tension: 50, useNativeDriver: true }),
     ]).start();
-    executeFill();
+    if (fillTarget <= 0) {
+      onNavigateToFill();
+    } else {
+      executeFill();
+    }
   };
 
   const formatCountdown = (epoch: number) => {
@@ -80,7 +84,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onNavigateToSprint, onNa
               ONE-TAP REFILL
             </Text>
             <Text style={[styles.fillTitle, { color: theme.textPrimary, fontSize: isSmallMobile ? 14 : 15 }]}>
-              Bowl Fill • 250g Target
+              {fillTarget > 0 ? `Bowl Fill • ${fillTarget}g Target` : 'Bowl Fill • Set Target'}
             </Text>
             <Text style={[styles.fillDesc, { color: theme.textSecondary }]}>
               Continuous closed-loop bulk pour with dynamic anti-jam gate throttling.
@@ -104,7 +108,9 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onNavigateToSprint, onNa
               ]}
             >
               <Ionicons name="water" size={13} color="#FFF" style={{ marginRight: 5 }} />
-              <Text style={styles.fillActionText}>Fill Bowl</Text>
+              <Text style={styles.fillActionText}>
+                {fillTarget > 0 ? 'Fill Bowl' : 'Set Target'}
+              </Text>
             </Animated.View>
           </TouchableOpacity>
         </View>

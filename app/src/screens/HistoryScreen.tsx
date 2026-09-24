@@ -24,7 +24,7 @@ export const HistoryScreen: React.FC = () => {
         };
       case 'fill':
         return {
-          label: 'FILL 250g',
+          label: 'BOWL FILL',
           bg: theme.primaryTint,
           color: isDark ? theme.primaryInteractive : theme.primary,
           icon: 'water-outline',

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -12,8 +12,11 @@ import {
   useWindowDimensions,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTheme } from '../theme/ThemeContext';
 import { useFeeder } from '../context/FeederContext';
+
+const STORAGE_KEY_KNOWN_WEIGHT = '@spaw_known_weight_input';
 
 export const SettingsScreen: React.FC = () => {
   const { theme, setThemeMode, isDark } = useTheme();
@@ -26,6 +29,8 @@ export const SettingsScreen: React.FC = () => {
     calibrateScale,
     status,
     refreshStatus,
+    bowlCapacity,
+    setBowlCapacity,
   } = useFeeder();
 
   // Responsive breakpoints
@@ -35,13 +40,55 @@ export const SettingsScreen: React.FC = () => {
   const isTabletOrDesktop = width >= 768;
 
   const [ipInput, setIpInput] = useState<string>(feederIp);
-  const [knownWeight, setKnownWeight] = useState<string>('100');
+  const [knownWeight, setKnownWeight] = useState<string>('0');
+  const [bowlCapacityInput, setBowlCapacityInput] = useState<string>(String(bowlCapacity || 400));
   const [calibrating, setCalibrating] = useState<boolean>(false);
+
+  // Sync with bowlCapacity from context
+  useEffect(() => {
+    if (bowlCapacity) {
+      setBowlCapacityInput(String(bowlCapacity));
+    }
+  }, [bowlCapacity]);
+
+  const handleBowlCapacityChange = (text: string) => {
+    const digitsOnly = text.replace(/[^0-9]/g, '');
+    const sanitized = digitsOnly === '' ? '0' : digitsOnly.replace(/^0+(?=\d)/, '');
+    setBowlCapacityInput(sanitized);
+    const num = parseInt(sanitized, 10);
+    if (!isNaN(num) && num > 0) {
+      setBowlCapacity(num);
+    }
+  };
+
+  const handleSelectCapacityPreset = (val: number) => {
+    const str = String(val);
+    setBowlCapacityInput(str);
+    setBowlCapacity(val);
+  };
+
+  // Load saved known weight on mount
+  useEffect(() => {
+    (async () => {
+      try {
+        const saved = await AsyncStorage.getItem(STORAGE_KEY_KNOWN_WEIGHT);
+        if (saved !== null) {
+          setKnownWeight(saved);
+        } else {
+          setKnownWeight('0');
+        }
+      } catch (e) {
+        console.warn('Error loading known weight', e);
+      }
+    })();
+  }, []);
 
   const handleKnownWeightChange = (text: string) => {
     // Strictly allow numbers only (no characters, no punctuation, no special characters)
     const digitsOnly = text.replace(/[^0-9]/g, '');
-    setKnownWeight(digitsOnly);
+    const sanitized = digitsOnly === '' ? '0' : digitsOnly.replace(/^0+(?=\d)/, '');
+    setKnownWeight(sanitized);
+    AsyncStorage.setItem(STORAGE_KEY_KNOWN_WEIGHT, sanitized).catch(() => {});
   };
 
   const handleSaveIp = async () => {
@@ -297,7 +344,103 @@ export const SettingsScreen: React.FC = () => {
           </View>
         </View>
 
-        {/* 2. Interactive Demo Mode Toggle */}
+        {/* 2. Bowl Maximum Capacity Card */}
+        <View
+          style={[
+            styles.card,
+            cardResponsiveStyle,
+            {
+              backgroundColor: theme.surface,
+              borderColor: theme.border,
+              shadowColor: theme.cardShadow,
+            },
+          ]}
+        >
+          <Text style={[styles.eyebrow, { color: theme.textMuted }]}>
+            HARDWARE SPECIFICATION
+          </Text>
+          <Text style={[styles.sectionHeading, { color: theme.textPrimary }]}>
+            Bowl Maximum Capacity
+          </Text>
+          <Text style={[styles.cardDesc, { color: theme.textSecondary }]}>
+            Container capacity in grams. Calibrates progress gauges, fill limits, and meal boundaries across the app.
+          </Text>
+
+          <View
+            style={[
+              styles.inputContainer,
+              {
+                backgroundColor: theme.surfaceLight,
+                marginTop: 12,
+              },
+            ]}
+          >
+            <TextInput
+              style={[
+                styles.textInput,
+                {
+                  color: theme.textPrimary,
+                  fontSize: isSmallMobile ? 16 : 18,
+                  fontWeight: '700',
+                  borderWidth: 0,
+                  outlineWidth: 0,
+                  outlineStyle: 'none',
+                } as any,
+              ]}
+              value={bowlCapacityInput}
+              onChangeText={handleBowlCapacityChange}
+              keyboardType="number-pad"
+              inputMode="numeric"
+              maxLength={4}
+              placeholder="400"
+              placeholderTextColor={theme.textDisabled}
+            />
+            <Text style={[styles.weightSuffix, { color: theme.textMuted, fontSize: 13, marginRight: 6 }]}>gms</Text>
+          </View>
+
+          {/* Quick capacity preset chips */}
+          <View style={[styles.capacityPresetsRow, { gap: isSmallMobile ? 4 : 6 }]}>
+            {[250, 350, 400, 500, 600].map((val) => {
+              const isSelected = bowlCapacityInput === String(val);
+              return (
+                <TouchableOpacity
+                  key={val}
+                  style={[
+                    styles.capacityChip,
+                    {
+                      backgroundColor: isSelected ? theme.primaryTint : theme.surfaceLight,
+                      borderColor: isSelected
+                        ? isDark
+                          ? theme.primaryInteractive
+                          : theme.primary
+                        : 'transparent',
+                    },
+                  ]}
+                  onPress={() => handleSelectCapacityPreset(val)}
+                  activeOpacity={0.7}
+                >
+                  <Text
+                    style={[
+                      styles.capacityChipText,
+                      {
+                        color: isSelected
+                          ? isDark
+                            ? theme.primaryInteractive
+                            : theme.primary
+                          : theme.textSecondary,
+                        fontSize: isSmallMobile ? 10 : 11,
+                      },
+                    ]}
+                  >
+                    {val}g
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        </View>
+
+        {/* 3. Interactive Demo Mode Toggle */}
         <View
           style={[
             styles.card,
@@ -953,5 +1096,20 @@ const styles = StyleSheet.create({
   aboutSub: {
     fontSize: 10,
     marginTop: 2,
+  },
+  capacityPresetsRow: {
+    flexDirection: 'row',
+    marginTop: 10,
+    width: '100%',
+  },
+  capacityChip: {
+    flex: 1,
+    paddingVertical: 6,
+    borderRadius: 8,
+    alignItems: 'center',
+    borderWidth: 1,
+  },
+  capacityChipText: {
+    fontWeight: '600',
   },
 });
