@@ -1,56 +1,117 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { Colors } from '../theme/colors';
+import { useTheme } from '../theme/ThemeContext';
 import { useFeeder } from '../context/FeederContext';
 
 export const WeightGauge: React.FC = () => {
+  const { theme, isDark } = useTheme();
   const { status, isDispensing, dispenseStage, activeTargetGrams, tareScale } = useFeeder();
 
-  // Progress relative to standard 300g bowl capacity
   const maxCapacity = 300;
   const percentage = Math.min(100, Math.max(0, (status.weight / maxCapacity) * 100));
 
   return (
-    <View style={styles.card}>
+    <View
+      style={[
+        styles.card,
+        {
+          backgroundColor: theme.surface,
+          borderColor: theme.border,
+          shadowColor: theme.cardShadow,
+        },
+      ]}
+    >
+      {/* Top Header Row */}
       <View style={styles.headerRow}>
-        <View style={styles.labelGroup}>
-          <Text style={styles.cardTitle}>BOWL SCALE</Text>
-          <Text style={styles.cardSubtitle}>Closed-loop HX711 feedback</Text>
+        <View>
+          <Text style={[styles.cardTitle, { color: theme.textSecondary }]}>
+            Bowl Scale
+          </Text>
+          <Text style={[styles.cardSubtitle, { color: theme.textMuted }]}>
+            Real-time closed-loop telemetry
+          </Text>
         </View>
 
-        <TouchableOpacity 
-          style={styles.tareButton} 
-          onPress={tareScale} 
+        <TouchableOpacity
+          style={[
+            styles.tareButton,
+            {
+              backgroundColor: theme.surfaceLight,
+              borderColor: theme.borderLight,
+            },
+          ]}
+          onPress={tareScale}
           disabled={isDispensing}
           activeOpacity={0.7}
         >
-          <Ionicons name="scale-outline" size={15} color={Colors.cyan} style={{ marginRight: 4 }} />
-          <Text style={styles.tareText}>TARE</Text>
+          <Ionicons name="scale-outline" size={14} color={theme.accentSage} style={{ marginRight: 4 }} />
+          <Text style={[styles.tareText, { color: theme.accentSage }]}>Tare</Text>
         </TouchableOpacity>
       </View>
 
-      {/* Main Gauge Center */}
+      {/* Main Circular Dial Instrument */}
       <View style={styles.gaugeContainer}>
-        <View style={[styles.outerRing, isDispensing && styles.outerRingDispensing]}>
-          <View style={styles.innerCircle}>
+        {/* Subtle Outer Instrument Ring */}
+        <View
+          style={[
+            styles.outerDial,
+            {
+              borderColor: isDispensing ? theme.accentClay : theme.border,
+              backgroundColor: isDispensing ? theme.accentClayTint : theme.primaryTint,
+            },
+          ]}
+        >
+          {/* Inner Display Surface */}
+          <View
+            style={[
+              styles.innerDial,
+              {
+                backgroundColor: theme.surfaceLight,
+                shadowColor: theme.cardShadow,
+              },
+            ]}
+          >
             {isDispensing ? (
               <View style={styles.dispensingOverlay}>
-                <ActivityIndicator size="large" color={Colors.amber} style={{ marginBottom: 8 }} />
-                <Text style={styles.dispenseStageText}>{dispenseStage}</Text>
-                <Text style={styles.dispenseTargetText}>Target: {activeTargetGrams}g</Text>
+                <ActivityIndicator size="small" color={theme.accentClay} style={{ marginBottom: 8 }} />
+                <Text style={[styles.dispenseStageText, { color: theme.accentClay }]}>
+                  {dispenseStage}
+                </Text>
+                <Text style={[styles.dispenseTargetText, { color: theme.textMuted }]}>
+                  Target: {activeTargetGrams}g
+                </Text>
               </View>
             ) : (
               <>
-                <Text style={styles.weightValue}>{status.weight.toFixed(0)}</Text>
-                <Text style={styles.weightUnit}>GRAMS</Text>
-                <View style={styles.servoBadge}>
-                  <View style={[
-                    styles.servoDot, 
-                    { backgroundColor: status.servo === 'closed' ? Colors.primary : Colors.amber }
-                  ]} />
-                  <Text style={styles.servoText}>
-                    Gate {status.servo.toUpperCase()}
+                <View style={styles.weightValueRow}>
+                  <Text style={[styles.weightValue, { color: theme.textPrimary }]}>
+                    {status.weight.toFixed(0)}
+                  </Text>
+                  <Text style={[styles.weightUnit, { color: theme.textMuted }]}>g</Text>
+                </View>
+
+                {/* Gate Status Pill */}
+                <View
+                  style={[
+                    styles.servoPill,
+                    {
+                      backgroundColor: theme.surface,
+                      borderColor: theme.borderLight,
+                    },
+                  ]}
+                >
+                  <View
+                    style={[
+                      styles.servoDot,
+                      {
+                        backgroundColor:
+                          status.servo === 'closed' ? theme.success : theme.accentClay,
+                      },
+                    ]}
+                  />
+                  <Text style={[styles.servoText, { color: theme.textSecondary }]}>
+                    {status.servo === 'closed' ? 'Gate Closed' : `Gate ${status.servo}`}
                   </Text>
                 </View>
               </>
@@ -59,14 +120,31 @@ export const WeightGauge: React.FC = () => {
         </View>
       </View>
 
-      {/* Capacity Bar */}
+      {/* Minimalist Capacity Bar */}
       <View style={styles.capacitySection}>
         <View style={styles.capacityLabels}>
-          <Text style={styles.capacityText}>Bowl Capacity ({percentage.toFixed(0)}%)</Text>
-          <Text style={styles.capacityText}>{status.weight.toFixed(0)} / {maxCapacity}g</Text>
+          <Text style={[styles.capacityText, { color: theme.textMuted }]}>
+            Bowl Fill Level
+          </Text>
+          <Text style={[styles.capacityValueText, { color: theme.textSecondary }]}>
+            {status.weight.toFixed(0)} / {maxCapacity}g ({percentage.toFixed(0)}%)
+          </Text>
         </View>
-        <View style={styles.track}>
-          <View style={[styles.fill, { width: `${percentage}%` }]} />
+        <View
+          style={[
+            styles.track,
+            { backgroundColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)' },
+          ]}
+        >
+          <View
+            style={[
+              styles.fill,
+              {
+                width: `${percentage}%`,
+                backgroundColor: isDispensing ? theme.accentClay : theme.primaryInteractive,
+              },
+            ]}
+          />
         </View>
       </View>
     </View>
@@ -75,117 +153,104 @@ export const WeightGauge: React.FC = () => {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: Colors.surface,
-    borderRadius: 24,
+    borderRadius: 22,
     padding: 20,
     marginHorizontal: 20,
-    marginTop: 10,
-    marginBottom: 16,
+    marginTop: 12,
+    marginBottom: 14,
     borderWidth: 1,
-    borderColor: Colors.border,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.12,
+    shadowRadius: 12,
+    elevation: 3,
   },
   headerRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 16,
-  },
-  labelGroup: {
-    flex: 1,
+    marginBottom: 8,
   },
   cardTitle: {
-    fontSize: 12,
-    fontWeight: '800',
-    color: Colors.cyan,
-    letterSpacing: 1.2,
+    fontSize: 15,
+    fontWeight: '700',
+    letterSpacing: -0.2,
   },
   cardSubtitle: {
     fontSize: 12,
-    color: Colors.textMuted,
-    marginTop: 2,
+    marginTop: 1,
   },
   tareButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(6, 182, 212, 0.12)',
     paddingHorizontal: 12,
     paddingVertical: 6,
-    borderRadius: 14,
+    borderRadius: 12,
     borderWidth: 1,
-    borderColor: 'rgba(6, 182, 212, 0.3)',
   },
   tareText: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: Colors.cyan,
-    letterSpacing: 0.5,
+    fontSize: 12,
+    fontWeight: '600',
+    letterSpacing: 0.2,
   },
   gaugeContainer: {
     alignItems: 'center',
     justifyContent: 'center',
-    marginVertical: 12,
+    marginVertical: 14,
   },
-  outerRing: {
-    width: 210,
-    height: 210,
-    borderRadius: 105,
-    borderWidth: 6,
-    borderColor: 'rgba(6, 182, 212, 0.25)',
+  outerDial: {
+    width: 200,
+    height: 200,
+    borderRadius: 100,
+    borderWidth: 2,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(6, 182, 212, 0.03)',
+    padding: 6,
   },
-  outerRingDispensing: {
-    borderColor: Colors.amber,
-    backgroundColor: 'rgba(245, 158, 11, 0.05)',
-  },
-  innerCircle: {
-    width: 180,
-    height: 180,
-    borderRadius: 90,
-    backgroundColor: Colors.surfaceElevated,
+  innerDial: {
+    width: 176,
+    height: 176,
+    borderRadius: 88,
     alignItems: 'center',
     justifyContent: 'center',
     padding: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.4,
-    shadowRadius: 10,
-    elevation: 8,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    elevation: 2,
+  },
+  weightValueRow: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    justifyContent: 'center',
   },
   weightValue: {
-    fontSize: 52,
-    fontWeight: '900',
-    color: Colors.textPrimary,
-    letterSpacing: -1,
+    fontSize: 48,
+    fontWeight: '800',
+    letterSpacing: -1.5,
   },
   weightUnit: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: Colors.textMuted,
-    letterSpacing: 1.5,
-    marginTop: -4,
+    fontSize: 16,
+    fontWeight: '600',
+    marginLeft: 3,
   },
-  servoBadge: {
+  servoPill: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 10,
-    backgroundColor: Colors.surfaceLight,
+    marginTop: 8,
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 12,
+    borderWidth: 1,
+    gap: 5,
   },
   servoDot: {
     width: 6,
     height: 6,
     borderRadius: 3,
-    marginRight: 6,
   },
   servoText: {
-    fontSize: 10,
+    fontSize: 11,
     fontWeight: '600',
-    color: Colors.textSecondary,
-    letterSpacing: 0.5,
   },
   dispensingOverlay: {
     alignItems: 'center',
@@ -195,35 +260,37 @@ const styles = StyleSheet.create({
   dispenseStageText: {
     fontSize: 13,
     fontWeight: '600',
-    color: Colors.amber,
     textAlign: 'center',
   },
   dispenseTargetText: {
     fontSize: 11,
-    color: Colors.textMuted,
     marginTop: 4,
   },
   capacitySection: {
-    marginTop: 8,
+    marginTop: 4,
   },
   capacityLabels: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    alignItems: 'center',
     marginBottom: 6,
   },
   capacityText: {
     fontSize: 11,
-    color: Colors.textMuted,
+    fontWeight: '500',
+  },
+  capacityValueText: {
+    fontSize: 11,
+    fontWeight: '600',
+    fontFamily: 'monospace',
   },
   track: {
-    height: 6,
+    height: 5,
     borderRadius: 3,
-    backgroundColor: Colors.surfaceLight,
     overflow: 'hidden',
   },
   fill: {
     height: '100%',
-    backgroundColor: Colors.cyan,
     borderRadius: 3,
   },
 });

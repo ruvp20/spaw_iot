@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { Colors } from '../theme/colors';
+import { useTheme } from '../theme/ThemeContext';
 import { useFeeder } from '../context/FeederContext';
 import { WeightGauge } from '../components/WeightGauge';
 import { QuickFeedCard } from '../components/QuickFeedCard';
@@ -12,6 +12,7 @@ interface HomeScreenProps {
 }
 
 export const HomeScreen: React.FC<HomeScreenProps> = ({ onNavigateToSprint, onNavigateToFill }) => {
+  const { theme } = useTheme();
   const { sprint, status, executeFill, isDispensing } = useFeeder();
 
   const formatCountdown = (epoch: number) => {
@@ -23,7 +24,11 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onNavigateToSprint, onNa
   };
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 24 }}>
+    <ScrollView
+      style={[styles.container, { backgroundColor: theme.background }]}
+      contentContainerStyle={{ paddingBottom: 28 }}
+      showsVerticalScrollIndicator={false}
+    >
       {/* Realtime Scale Dial */}
       <WeightGauge />
 
@@ -31,83 +36,159 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onNavigateToSprint, onNa
       <QuickFeedCard />
 
       {/* Fill Card Feature Shortcut */}
-      <View style={styles.fillBanner}>
+      <View
+        style={[
+          styles.fillBanner,
+          {
+            backgroundColor: theme.surface,
+            borderColor: theme.border,
+            shadowColor: theme.cardShadow,
+          },
+        ]}
+      >
         <View style={styles.fillBannerContent}>
-          <Text style={styles.fillTitle}>FILL OPERATION</Text>
-          <Text style={styles.fillDesc}>Target 250g bowl refill with continuous closed-loop feedback.</Text>
+          <View style={styles.fillBadgeRow}>
+            <View style={[styles.fillDot, { backgroundColor: theme.accentSage }]} />
+            <Text style={[styles.fillBadgeLabel, { color: theme.accentSage }]}>
+              Automated Fill
+            </Text>
+          </View>
+          <Text style={[styles.fillTitle, { color: theme.textPrimary }]}>
+            Bowl Fill • 250g Target
+          </Text>
+          <Text style={[styles.fillDesc, { color: theme.textMuted }]}>
+            Continuous closed-loop bulk pour with anti-jam shutoff.
+          </Text>
         </View>
+
         <TouchableOpacity
-          style={styles.fillActionBtn}
+          style={[
+            styles.fillActionBtn,
+            { backgroundColor: theme.primaryInteractive },
+          ]}
           onPress={executeFill}
           disabled={isDispensing}
           activeOpacity={0.8}
         >
-          <Ionicons name="sparkles" size={16} color="#000" style={{ marginRight: 4 }} />
-          <Text style={styles.fillActionText}>FILL 250g</Text>
+          <Ionicons name="play" size={13} color="#FFF" style={{ marginRight: 4 }} />
+          <Text style={styles.fillActionText}>Fill Bowl</Text>
         </TouchableOpacity>
       </View>
 
       {/* Sprint Schedule Status Card */}
-      <View style={styles.card}>
+      <View
+        style={[
+          styles.card,
+          {
+            backgroundColor: theme.surface,
+            borderColor: theme.border,
+            shadowColor: theme.cardShadow,
+          },
+        ]}
+      >
         <View style={styles.cardHeader}>
-          <View style={styles.sprintIconCircle}>
-            <Ionicons name="calendar-outline" size={16} color={Colors.purple} />
+          <View
+            style={[
+              styles.sprintIconCircle,
+              { backgroundColor: theme.accentOchreTint },
+            ]}
+          >
+            <Ionicons name="calendar-outline" size={15} color={theme.accentOchre} />
           </View>
           <View style={{ flex: 1 }}>
-            <Text style={styles.sprintTitle}>SPRINT SCHEDULE</Text>
-            <Text style={styles.sprintSubtitle}>
-              {sprint.enabled ? 'Automatic Interval Feeding Active' : 'No Active Schedule'}
+            <Text style={[styles.sprintTitle, { color: theme.textSecondary }]}>
+              Sprint Schedule
+            </Text>
+            <Text style={[styles.sprintSubtitle, { color: theme.textMuted }]}>
+              {sprint.enabled ? 'Autonomous interval feeds active' : 'No active schedule configured'}
             </Text>
           </View>
-          <TouchableOpacity onPress={onNavigateToSprint}>
-            <Text style={styles.manageText}>Manage</Text>
+          <TouchableOpacity onPress={onNavigateToSprint} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+            <Text style={[styles.manageText, { color: theme.primaryInteractive }]}>Configure</Text>
           </TouchableOpacity>
         </View>
 
         {sprint.enabled ? (
           <View style={styles.sprintStatsGrid}>
-            <View style={styles.statBox}>
-              <Text style={styles.statLabel}>Next Feed In</Text>
-              <Text style={styles.statVal}>{formatCountdown(sprint.nextFeedEpoch)}</Text>
+            <View style={[styles.statBox, { backgroundColor: theme.surfaceLight }]}>
+              <Text style={[styles.statLabel, { color: theme.textMuted }]}>Next Feed</Text>
+              <Text style={[styles.statVal, { color: theme.textPrimary }]}>
+                {formatCountdown(sprint.nextFeedEpoch)}
+              </Text>
             </View>
-            <View style={styles.statBox}>
-              <Text style={styles.statLabel}>Portion</Text>
-              <Text style={styles.statVal}>{sprint.grams}g</Text>
+            <View style={[styles.statBox, { backgroundColor: theme.surfaceLight }]}>
+              <Text style={[styles.statLabel, { color: theme.textMuted }]}>Portion</Text>
+              <Text style={[styles.statVal, { color: theme.textPrimary }]}>{sprint.grams}g</Text>
             </View>
-            <View style={styles.statBox}>
-              <Text style={styles.statLabel}>Progress</Text>
-              <Text style={styles.statVal}>{sprint.completedFeeds} / {sprint.totalFeeds}</Text>
+            <View style={[styles.statBox, { backgroundColor: theme.surfaceLight }]}>
+              <Text style={[styles.statLabel, { color: theme.textMuted }]}>Progress</Text>
+              <Text style={[styles.statVal, { color: theme.textPrimary }]}>
+                {sprint.completedFeeds} / {sprint.totalFeeds}
+              </Text>
             </View>
           </View>
         ) : (
-          <TouchableOpacity style={styles.createSprintBtn} onPress={onNavigateToSprint}>
-            <Ionicons name="add-circle-outline" size={18} color={Colors.purple} style={{ marginRight: 6 }} />
-            <Text style={styles.createSprintText}>Set Up Interval Feeds</Text>
+          <TouchableOpacity
+            style={[
+              styles.createSprintBtn,
+              {
+                backgroundColor: theme.surfaceLight,
+                borderColor: theme.borderLight,
+              },
+            ]}
+            onPress={onNavigateToSprint}
+            activeOpacity={0.7}
+          >
+            <Ionicons
+              name="add-outline"
+              size={16}
+              color={theme.accentOchre}
+              style={{ marginRight: 6 }}
+            />
+            <Text style={[styles.createSprintText, { color: theme.textPrimary }]}>
+              Set up scheduled feeds
+            </Text>
           </TouchableOpacity>
         )}
       </View>
 
       {/* System Telemetry & Health */}
-      <View style={styles.telemetryCard}>
+      <View
+        style={[
+          styles.telemetryCard,
+          {
+            backgroundColor: theme.surface,
+            borderColor: theme.borderLight,
+          },
+        ]}
+      >
         <View style={styles.telemetryItem}>
-          <Ionicons name="wifi-outline" size={16} color={status.wifi ? Colors.primary : Colors.danger} />
-          <Text style={styles.telemetryText}>
-            {status.wifi ? `Wi-Fi (${status.rssi || -60} dBm)` : 'Offline'}
+          <Ionicons
+            name="wifi"
+            size={14}
+            color={status.wifi ? theme.success : theme.danger}
+          />
+          <Text style={[styles.telemetryText, { color: theme.textSecondary }]}>
+            {status.wifi ? `Wi-Fi ${status.rssi || -60} dBm` : 'Offline'}
           </Text>
         </View>
 
-        <View style={styles.telemetryDivider} />
+        <View style={[styles.telemetryDivider, { backgroundColor: theme.borderLight }]} />
 
         <View style={styles.telemetryItem}>
-          <Ionicons name="cog-outline" size={16} color={Colors.cyan} />
-          <Text style={styles.telemetryText}>FW v{status.firmware}</Text>
+          <Ionicons name="hardware-chip-outline" size={14} color={theme.accentSage} />
+          <Text style={[styles.telemetryText, { color: theme.textSecondary }]}>
+            FW v{status.firmware}
+          </Text>
         </View>
 
-        <View style={styles.telemetryDivider} />
+        <View style={[styles.telemetryDivider, { backgroundColor: theme.borderLight }]} />
 
         <View style={styles.telemetryItem}>
-          <Ionicons name="shield-checkmark-outline" size={16} color={Colors.primary} />
-          <Text style={styles.telemetryText}>Anti-Jam Active</Text>
+          <Ionicons name="shield-checkmark-outline" size={14} color={theme.success} />
+          <Text style={[styles.telemetryText, { color: theme.textSecondary }]}>
+            Anti-Jam OK
+          </Text>
         </View>
       </View>
     </ScrollView>
@@ -117,58 +198,75 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onNavigateToSprint, onNa
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background,
   },
   fillBanner: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: 'rgba(16, 185, 129, 0.1)',
     marginHorizontal: 20,
-    marginBottom: 16,
+    marginBottom: 14,
     padding: 16,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: 'rgba(16, 185, 129, 0.3)',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 2,
   },
   fillBannerContent: {
     flex: 1,
-    paddingRight: 12,
+    paddingRight: 14,
+  },
+  fillBadgeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    marginBottom: 3,
+  },
+  fillDot: {
+    width: 5,
+    height: 5,
+    borderRadius: 3,
+  },
+  fillBadgeLabel: {
+    fontSize: 10,
+    fontWeight: '700',
+    letterSpacing: 0.4,
+    textTransform: 'uppercase',
   },
   fillTitle: {
-    fontSize: 12,
-    fontWeight: '800',
-    color: Colors.primary,
-    letterSpacing: 1,
+    fontSize: 14,
+    fontWeight: '700',
+    letterSpacing: -0.2,
   },
   fillDesc: {
     fontSize: 11,
-    color: Colors.textSecondary,
     marginTop: 2,
     lineHeight: 15,
   },
   fillActionBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: Colors.primary,
     paddingHorizontal: 14,
     paddingVertical: 10,
-    borderRadius: 14,
+    borderRadius: 12,
   },
   fillActionText: {
     fontSize: 12,
-    fontWeight: '800',
-    color: '#000',
-    letterSpacing: 0.5,
+    fontWeight: '700',
+    color: '#FFF',
+    letterSpacing: 0.2,
   },
   card: {
-    backgroundColor: Colors.surface,
-    borderRadius: 24,
+    borderRadius: 22,
     padding: 18,
     marginHorizontal: 20,
-    marginBottom: 16,
+    marginBottom: 14,
     borderWidth: 1,
-    borderColor: Colors.border,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 2,
   },
   cardHeader: {
     flexDirection: 'row',
@@ -178,78 +276,66 @@ const styles = StyleSheet.create({
   sprintIconCircle: {
     width: 28,
     height: 28,
-    borderRadius: 14,
-    backgroundColor: 'rgba(139, 92, 246, 0.15)',
+    borderRadius: 9,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 10,
   },
   sprintTitle: {
-    fontSize: 12,
-    fontWeight: '800',
-    color: Colors.purple,
-    letterSpacing: 1.1,
+    fontSize: 14,
+    fontWeight: '700',
+    letterSpacing: -0.2,
   },
   sprintSubtitle: {
     fontSize: 12,
-    color: Colors.textMuted,
     marginTop: 1,
   },
   manageText: {
     fontSize: 12,
-    fontWeight: '700',
-    color: Colors.cyan,
+    fontWeight: '600',
   },
   sprintStatsGrid: {
     flexDirection: 'row',
     gap: 8,
-    marginTop: 6,
+    marginTop: 4,
   },
   statBox: {
     flex: 1,
-    backgroundColor: Colors.surfaceLight,
     padding: 10,
-    borderRadius: 14,
+    borderRadius: 12,
     alignItems: 'center',
   },
   statLabel: {
     fontSize: 10,
-    color: Colors.textMuted,
-    fontWeight: '600',
+    fontWeight: '500',
     marginBottom: 4,
   },
   statVal: {
     fontSize: 14,
-    fontWeight: '800',
-    color: Colors.textPrimary,
+    fontWeight: '700',
   },
   createSprintBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(139, 92, 246, 0.12)',
-    paddingVertical: 12,
-    borderRadius: 14,
-    marginTop: 6,
+    paddingVertical: 10,
+    borderRadius: 12,
+    marginTop: 4,
     borderWidth: 1,
-    borderColor: 'rgba(139, 92, 246, 0.3)',
   },
   createSprintText: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: Colors.purple,
+    fontSize: 12,
+    fontWeight: '600',
   },
   telemetryCard: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-around',
-    backgroundColor: Colors.surfaceElevated,
     marginHorizontal: 20,
-    paddingVertical: 12,
+    paddingVertical: 10,
     paddingHorizontal: 16,
-    borderRadius: 16,
+    borderRadius: 14,
     borderWidth: 1,
-    borderColor: Colors.border,
   },
   telemetryItem: {
     flexDirection: 'row',
@@ -258,12 +344,10 @@ const styles = StyleSheet.create({
   },
   telemetryText: {
     fontSize: 11,
-    fontWeight: '600',
-    color: Colors.textSecondary,
+    fontWeight: '500',
   },
   telemetryDivider: {
     width: 1,
-    height: 16,
-    backgroundColor: Colors.borderLight,
+    height: 14,
   },
 });

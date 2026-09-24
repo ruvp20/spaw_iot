@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { StyleSheet, SafeAreaView, View } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
-import { Colors } from './src/theme/colors';
+import { ThemeProvider, useTheme } from './src/theme/ThemeContext';
 import { FeederProvider } from './src/context/FeederContext';
 import { Header } from './src/components/Header';
 import { BottomNav, TabKey } from './src/components/BottomNav';
@@ -11,8 +11,9 @@ import { SprintScreen } from './src/screens/SprintScreen';
 import { HistoryScreen } from './src/screens/HistoryScreen';
 import { SettingsScreen } from './src/screens/SettingsScreen';
 
-export default function App() {
+function MainApp() {
   const [currentTab, setCurrentTab] = useState<TabKey>('home');
+  const { theme, isDark } = useTheme();
 
   const renderCurrentScreen = () => {
     switch (currentTab) {
@@ -42,23 +43,30 @@ export default function App() {
   };
 
   return (
-    <FeederProvider>
-      <SafeAreaView style={styles.safeArea}>
-        <StatusBar style="light" />
-        <Header />
-        <View style={styles.screenContainer}>
-          {renderCurrentScreen()}
-        </View>
-        <BottomNav currentTab={currentTab} onSelectTab={setCurrentTab} />
-      </SafeAreaView>
-    </FeederProvider>
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: theme.background }]}>
+      <StatusBar style={isDark ? 'light' : 'dark'} />
+      <Header />
+      <View style={styles.screenContainer}>
+        {renderCurrentScreen()}
+      </View>
+      <BottomNav currentTab={currentTab} onSelectTab={setCurrentTab} />
+    </SafeAreaView>
+  );
+}
+
+export default function App() {
+  return (
+    <ThemeProvider>
+      <FeederProvider>
+        <MainApp />
+      </FeederProvider>
+    </ThemeProvider>
   );
 }
 
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: Colors.background,
   },
   screenContainer: {
     flex: 1,

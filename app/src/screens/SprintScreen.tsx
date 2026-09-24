@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { Colors } from '../theme/colors';
+import { useTheme } from '../theme/ThemeContext';
 import { useFeeder } from '../context/FeederContext';
 
 export const SprintScreen: React.FC = () => {
+  const { theme } = useTheme();
   const { sprint, saveSprint, cancelSprint } = useFeeder();
 
   const [grams, setGrams] = useState<number>(sprint.grams || 50);
@@ -30,7 +31,6 @@ export const SprintScreen: React.FC = () => {
     await cancelSprint();
   };
 
-  // Generate preview feed timestamps
   const getTimelinePreviews = () => {
     const now = Date.now();
     const list = [];
@@ -45,64 +45,117 @@ export const SprintScreen: React.FC = () => {
   const timeline = getTimelinePreviews();
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={{ padding: 20 }}>
+    <ScrollView
+      style={[styles.container, { backgroundColor: theme.background }]}
+      contentContainerStyle={{ padding: 20, paddingBottom: 32 }}
+      showsVerticalScrollIndicator={false}
+    >
       {/* Active Sprint Banner */}
       {sprint.enabled ? (
-        <View style={styles.activeCard}>
+        <View
+          style={[
+            styles.activeCard,
+            {
+              backgroundColor: theme.surface,
+              borderColor: theme.border,
+              shadowColor: theme.cardShadow,
+            },
+          ]}
+        >
           <View style={styles.activeHeader}>
-            <View style={styles.activeIconCircle}>
-              <Ionicons name="flash" size={18} color={Colors.purple} />
+            <View style={[styles.activeIconCircle, { backgroundColor: theme.accentOchreTint }]}>
+              <Ionicons name="time" size={16} color={theme.accentOchre} />
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={styles.activeTitle}>SPRINT IN PROGRESS</Text>
-              <Text style={styles.activeSubtitle}>
-                {sprint.grams}g every {sprint.intervalHours} hours ({sprint.completedFeeds} of {sprint.totalFeeds} completed)
+              <Text style={[styles.activeTitle, { color: theme.textPrimary }]}>
+                Active Schedule
+              </Text>
+              <Text style={[styles.activeSubtitle, { color: theme.textMuted }]}>
+                {sprint.grams}g every {sprint.intervalHours}h ({sprint.completedFeeds} of {sprint.totalFeeds} delivered)
               </Text>
             </View>
           </View>
 
           <View style={styles.activeProgressRow}>
-            <View style={styles.progressTrack}>
-              <View 
+            <View style={[styles.progressTrack, { backgroundColor: theme.surfaceLight }]}>
+              <View
                 style={[
-                  styles.progressFill, 
-                  { width: `${(sprint.completedFeeds / Math.max(1, sprint.totalFeeds)) * 100}%` }
-                ]} 
+                  styles.progressFill,
+                  {
+                    backgroundColor: theme.accentOchre,
+                    width: `${(sprint.completedFeeds / Math.max(1, sprint.totalFeeds)) * 100}%`,
+                  },
+                ]}
               />
             </View>
-            <Text style={styles.progressPct}>
+            <Text style={[styles.progressPct, { color: theme.accentOchre }]}>
               {sprint.completedFeeds}/{sprint.totalFeeds}
             </Text>
           </View>
 
           <TouchableOpacity
-            style={styles.cancelButton}
+            style={[
+              styles.cancelButton,
+              {
+                backgroundColor: theme.dangerTint,
+                borderColor: theme.borderLight,
+              },
+            ]}
             onPress={handleCancelSprint}
             activeOpacity={0.8}
           >
-            <Ionicons name="close-circle-outline" size={18} color={Colors.danger} style={{ marginRight: 6 }} />
-            <Text style={styles.cancelText}>Cancel Active Schedule</Text>
+            <Ionicons name="close-circle-outline" size={16} color={theme.danger} style={{ marginRight: 6 }} />
+            <Text style={[styles.cancelText, { color: theme.danger }]}>
+              Cancel Active Schedule
+            </Text>
           </TouchableOpacity>
         </View>
       ) : null}
 
       {/* Configuration Card */}
-      <View style={styles.card}>
-        <Text style={styles.sectionTitle}>CONFIGURE SPRINT SCHEDULE</Text>
-        <Text style={styles.sectionDesc}>
-          The ESP32 runs this schedule autonomously, even if the mobile app is closed.
+      <View
+        style={[
+          styles.card,
+          {
+            backgroundColor: theme.surface,
+            borderColor: theme.border,
+            shadowColor: theme.cardShadow,
+          },
+        ]}
+      >
+        <Text style={[styles.sectionTitle, { color: theme.textPrimary }]}>
+          Schedule Settings
+        </Text>
+        <Text style={[styles.sectionDesc, { color: theme.textMuted }]}>
+          Feeds execute automatically on the ESP32 RTC clock without needing your phone online.
         </Text>
 
         {/* Portion Selector */}
-        <Text style={styles.fieldLabel}>FOOD PER FEED (GRAMS)</Text>
+        <Text style={[styles.fieldLabel, { color: theme.textSecondary }]}>
+          Food Portion per Feed
+        </Text>
         <View style={styles.quickGramsRow}>
-          {[25, 40, 50, 65, 80].map(val => (
+          {[25, 40, 50, 65, 80].map((val) => (
             <TouchableOpacity
               key={val}
-              style={[styles.pillBtn, grams === val && styles.pillBtnActive]}
+              style={[
+                styles.pillBtn,
+                {
+                  backgroundColor: grams === val ? theme.primaryTint : theme.surfaceLight,
+                  borderColor: grams === val ? theme.primaryInteractive : theme.borderLight,
+                },
+              ]}
               onPress={() => setGrams(val)}
             >
-              <Text style={[styles.pillText, grams === val && styles.pillTextActive]}>
+              <Text
+                style={[
+                  styles.pillText,
+                  {
+                    color: grams === val ? theme.primaryInteractive : theme.textSecondary,
+                    fontWeight: grams === val ? '700' : '500',
+                  },
+                ]}
+              >
                 {val}g
               </Text>
             </TouchableOpacity>
@@ -110,31 +163,63 @@ export const SprintScreen: React.FC = () => {
         </View>
 
         {/* Interval Selector */}
-        <Text style={styles.fieldLabel}>INTERVAL BETWEEN FEEDS</Text>
+        <Text style={[styles.fieldLabel, { color: theme.textSecondary }]}>
+          Interval Between Feeds
+        </Text>
         <View style={styles.quickGramsRow}>
-          {intervalOptions.map(val => (
+          {intervalOptions.map((val) => (
             <TouchableOpacity
               key={val}
-              style={[styles.pillBtn, intervalHours === val && styles.pillBtnActive]}
+              style={[
+                styles.pillBtn,
+                {
+                  backgroundColor: intervalHours === val ? theme.primaryTint : theme.surfaceLight,
+                  borderColor: intervalHours === val ? theme.primaryInteractive : theme.borderLight,
+                },
+              ]}
               onPress={() => setIntervalHours(val)}
             >
-              <Text style={[styles.pillText, intervalHours === val && styles.pillTextActive]}>
-                {val} hrs
+              <Text
+                style={[
+                  styles.pillText,
+                  {
+                    color: intervalHours === val ? theme.primaryInteractive : theme.textSecondary,
+                    fontWeight: intervalHours === val ? '700' : '500',
+                  },
+                ]}
+              >
+                {val}h
               </Text>
             </TouchableOpacity>
           ))}
         </View>
 
         {/* Total Feeds Selector */}
-        <Text style={styles.fieldLabel}>NUMBER OF FEEDS</Text>
+        <Text style={[styles.fieldLabel, { color: theme.textSecondary }]}>
+          Number of Feeds
+        </Text>
         <View style={styles.quickGramsRow}>
-          {countOptions.map(val => (
+          {countOptions.map((val) => (
             <TouchableOpacity
               key={val}
-              style={[styles.pillBtn, totalFeeds === val && styles.pillBtnActive]}
+              style={[
+                styles.pillBtn,
+                {
+                  backgroundColor: totalFeeds === val ? theme.primaryTint : theme.surfaceLight,
+                  borderColor: totalFeeds === val ? theme.primaryInteractive : theme.borderLight,
+                },
+              ]}
               onPress={() => setTotalFeeds(val)}
             >
-              <Text style={[styles.pillText, totalFeeds === val && styles.pillTextActive]}>
+              <Text
+                style={[
+                  styles.pillText,
+                  {
+                    color: totalFeeds === val ? theme.primaryInteractive : theme.textSecondary,
+                    fontWeight: totalFeeds === val ? '700' : '500',
+                  },
+                ]}
+              >
                 {val}x
               </Text>
             </TouchableOpacity>
@@ -143,27 +228,50 @@ export const SprintScreen: React.FC = () => {
 
         {/* Start / Update Button */}
         <TouchableOpacity
-          style={styles.saveBtn}
+          style={[styles.saveBtn, { backgroundColor: theme.primaryInteractive }]}
           onPress={handleStartSprint}
           disabled={isSaving}
           activeOpacity={0.8}
         >
-          <Ionicons name="timer-outline" size={20} color="#FFF" style={{ marginRight: 8 }} />
+          <Ionicons name="calendar-outline" size={18} color="#FFF" style={{ marginRight: 6 }} />
           <Text style={styles.saveBtnText}>
-            {sprint.enabled ? 'UPDATE SPRINT SCHEDULE' : 'START SPRINT SCHEDULE'}
+            {sprint.enabled ? 'Update Schedule' : 'Start Schedule'}
           </Text>
         </TouchableOpacity>
       </View>
 
       {/* Generated Timeline Forecast */}
-      <View style={styles.timelineCard}>
-        <Text style={styles.timelineTitle}>ESTIMATED FEED TIMELINE</Text>
+      <View
+        style={[
+          styles.timelineCard,
+          {
+            backgroundColor: theme.surface,
+            borderColor: theme.border,
+          },
+        ]}
+      >
+        <Text style={[styles.timelineTitle, { color: theme.textSecondary }]}>
+          Estimated Timeline
+        </Text>
         {timeline.map((item, idx) => (
-          <View key={item.num} style={styles.timelineRow}>
-            <View style={styles.timelineDot} />
-            <Text style={styles.timelineFeedName}>Feed #{item.num}</Text>
-            <Text style={styles.timelineGrams}>{grams}g</Text>
-            <Text style={styles.timelineTime}>{item.time}</Text>
+          <View
+            key={item.num}
+            style={[
+              styles.timelineRow,
+              { borderBottomColor: theme.borderLight },
+              idx === timeline.length - 1 && { borderBottomWidth: 0 },
+            ]}
+          >
+            <View style={[styles.timelineDot, { backgroundColor: theme.accentSage }]} />
+            <Text style={[styles.timelineFeedName, { color: theme.textPrimary }]}>
+              Feed #{item.num}
+            </Text>
+            <Text style={[styles.timelineGrams, { color: theme.textMuted }]}>
+              {grams}g
+            </Text>
+            <Text style={[styles.timelineTime, { color: theme.accentSage }]}>
+              {item.time}
+            </Text>
           </View>
         ))}
       </View>
@@ -174,15 +282,16 @@ export const SprintScreen: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background,
   },
   activeCard: {
-    backgroundColor: 'rgba(139, 92, 246, 0.1)',
-    borderRadius: 22,
+    borderRadius: 20,
     padding: 18,
-    marginBottom: 16,
+    marginBottom: 14,
     borderWidth: 1,
-    borderColor: 'rgba(139, 92, 246, 0.3)',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 2,
   },
   activeHeader: {
     flexDirection: 'row',
@@ -192,45 +301,39 @@ const styles = StyleSheet.create({
   activeIconCircle: {
     width: 32,
     height: 32,
-    borderRadius: 16,
-    backgroundColor: 'rgba(139, 92, 246, 0.2)',
+    borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 10,
   },
   activeTitle: {
-    fontSize: 12,
-    fontWeight: '800',
-    color: Colors.purple,
-    letterSpacing: 1,
+    fontSize: 14,
+    fontWeight: '700',
   },
   activeSubtitle: {
     fontSize: 12,
-    color: Colors.textSecondary,
     marginTop: 2,
   },
   activeProgressRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
-    marginVertical: 6,
+    marginVertical: 4,
   },
   progressTrack: {
     flex: 1,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: Colors.surfaceLight,
+    height: 6,
+    borderRadius: 3,
     overflow: 'hidden',
   },
   progressFill: {
     height: '100%',
-    backgroundColor: Colors.purple,
-    borderRadius: 4,
+    borderRadius: 3,
   },
   progressPct: {
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '700',
-    color: Colors.purple,
+    fontFamily: 'monospace',
   },
   cancelButton: {
     flexDirection: 'row',
@@ -239,43 +342,38 @@ const styles = StyleSheet.create({
     marginTop: 12,
     paddingVertical: 10,
     borderRadius: 12,
-    backgroundColor: 'rgba(239, 68, 68, 0.1)',
     borderWidth: 1,
-    borderColor: 'rgba(239, 68, 68, 0.25)',
   },
   cancelText: {
     fontSize: 12,
-    fontWeight: '700',
-    color: Colors.danger,
+    fontWeight: '600',
   },
   card: {
-    backgroundColor: Colors.surface,
-    borderRadius: 24,
+    borderRadius: 22,
     padding: 20,
-    marginBottom: 16,
+    marginBottom: 14,
     borderWidth: 1,
-    borderColor: Colors.border,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 2,
   },
   sectionTitle: {
-    fontSize: 11,
-    fontWeight: '800',
-    color: Colors.purple,
-    letterSpacing: 1.1,
+    fontSize: 15,
+    fontWeight: '700',
+    letterSpacing: -0.2,
   },
   sectionDesc: {
     fontSize: 12,
-    color: Colors.textMuted,
-    marginTop: 4,
+    marginTop: 3,
     marginBottom: 16,
     lineHeight: 16,
   },
   fieldLabel: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: Colors.textSecondary,
+    fontSize: 12,
+    fontWeight: '600',
     marginBottom: 8,
-    marginTop: 8,
-    letterSpacing: 0.5,
+    marginTop: 6,
   },
   quickGramsRow: {
     flexDirection: 'row',
@@ -284,82 +382,61 @@ const styles = StyleSheet.create({
   },
   pillBtn: {
     flex: 1,
-    backgroundColor: Colors.surfaceLight,
-    paddingVertical: 10,
-    borderRadius: 12,
+    paddingVertical: 9,
+    borderRadius: 10,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: Colors.borderLight,
-  },
-  pillBtnActive: {
-    backgroundColor: 'rgba(139, 92, 246, 0.2)',
-    borderColor: Colors.purple,
   },
   pillText: {
     fontSize: 12,
-    fontWeight: '700',
-    color: Colors.textSecondary,
-  },
-  pillTextActive: {
-    color: Colors.purple,
   },
   saveBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: Colors.purple,
-    paddingVertical: 16,
-    borderRadius: 18,
-    marginTop: 12,
+    paddingVertical: 15,
+    borderRadius: 16,
+    marginTop: 8,
   },
   saveBtnText: {
-    fontSize: 13,
-    fontWeight: '800',
+    fontSize: 14,
+    fontWeight: '700',
     color: '#FFF',
-    letterSpacing: 0.6,
+    letterSpacing: 0.2,
   },
   timelineCard: {
-    backgroundColor: Colors.surface,
     borderRadius: 20,
     padding: 18,
     borderWidth: 1,
-    borderColor: Colors.border,
   },
   timelineTitle: {
-    fontSize: 11,
-    fontWeight: '800',
-    color: Colors.cyan,
-    letterSpacing: 1,
-    marginBottom: 12,
+    fontSize: 13,
+    fontWeight: '700',
+    marginBottom: 10,
   },
   timelineRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 8,
+    paddingVertical: 9,
     borderBottomWidth: 1,
-    borderBottomColor: Colors.surfaceLight,
   },
   timelineDot: {
     width: 6,
     height: 6,
     borderRadius: 3,
-    backgroundColor: Colors.cyan,
     marginRight: 10,
   },
   timelineFeedName: {
     fontSize: 12,
-    fontWeight: '700',
-    color: Colors.textPrimary,
-    width: 70,
+    fontWeight: '600',
+    width: 75,
   },
   timelineGrams: {
     fontSize: 12,
-    color: Colors.textSecondary,
     flex: 1,
   },
   timelineTime: {
     fontSize: 12,
-    color: Colors.cyan,
     fontFamily: 'monospace',
     fontWeight: '600',
   },
