@@ -24,6 +24,12 @@ export const QuickFeedCard: React.FC = () => {
     callback();
   };
 
+  const handleCustomInputChange = (text: string) => {
+    // Strictly allow numbers only (no characters, no punctuation, no negative signs, no spaces)
+    const digitsOnly = text.replace(/[^0-9]/g, '');
+    setCustomInput(digitsOnly);
+  };
+
   const handleCustomSubmit = () => {
     const parsed = parseInt(customInput, 10);
     if (!isNaN(parsed) && parsed >= 5 && parsed <= 300) {
@@ -224,7 +230,7 @@ export const QuickFeedCard: React.FC = () => {
               </TouchableOpacity>
             </View>
 
-            {/* BORDERLESS Numeric Input Row */}
+            {/* BORDERLESS Unified Numeric Input Container */}
             <View
               style={[
                 styles.inputRow,
@@ -244,14 +250,15 @@ export const QuickFeedCard: React.FC = () => {
                   } as any,
                 ]}
                 value={customInput}
-                onChangeText={setCustomInput}
-                keyboardType="numeric"
+                onChangeText={handleCustomInputChange}
+                keyboardType="number-pad"
+                inputMode="numeric"
                 maxLength={3}
                 placeholder="0"
                 placeholderTextColor={theme.textDisabled}
                 autoFocus
               />
-              <Text style={[styles.inputSuffix, { color: theme.textMuted }]}>grams</Text>
+              <Text style={[styles.inputSuffix, { color: theme.textMuted }]}>gms</Text>
             </View>
 
             {/* Quick preset chips */}
@@ -435,21 +442,26 @@ const styles = StyleSheet.create({
   inputRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
     borderRadius: 14,
-    borderWidth: 0, // BORDERLESS
-    paddingHorizontal: 16,
+    borderWidth: 0,
+    paddingHorizontal: 20,
+    paddingVertical: 6,
     marginBottom: 16,
   },
   input: {
-    flex: 1,
-    paddingVertical: 12,
-    fontSize: 26,
+    fontSize: 34,
     fontWeight: '800',
-    borderWidth: 0, // BORDERLESS
+    textAlign: 'center',
+    paddingVertical: 8,
+    borderWidth: 0,
+    minWidth: 70,
   },
   inputSuffix: {
-    fontSize: 14,
-    fontWeight: '600',
+    fontSize: 16,
+    fontWeight: '700',
+    marginLeft: 4,
+    paddingTop: 8,
   },
   chipRow: {
     flexDirection: 'row',

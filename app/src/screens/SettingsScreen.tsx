@@ -31,6 +31,12 @@ export const SettingsScreen: React.FC = () => {
   const [knownWeight, setKnownWeight] = useState<string>('100');
   const [calibrating, setCalibrating] = useState<boolean>(false);
 
+  const handleKnownWeightChange = (text: string) => {
+    // Strictly allow numbers only (no characters, no punctuation, no special characters)
+    const digitsOnly = text.replace(/[^0-9]/g, '');
+    setKnownWeight(digitsOnly);
+  };
+
   const handleSaveIp = async () => {
     await setFeederIp(ipInput.trim());
     Alert.alert('Settings Saved', `Endpoint set to: ${ipInput.trim()}`);
@@ -347,12 +353,11 @@ export const SettingsScreen: React.FC = () => {
           </View>
           <View style={{ flex: 1 }}>
             <Text style={[styles.stepTitle, { color: theme.textPrimary }]}>Reference Calibration</Text>
-            <View style={styles.weightInputRow}>
+            <View style={[styles.weightInputRow, { backgroundColor: theme.surface }]}>
               <TextInput
                 style={[
                   styles.weightInput,
                   {
-                    backgroundColor: theme.surface,
                     color: theme.textPrimary,
                     borderWidth: 0,
                     outlineWidth: 0,
@@ -360,11 +365,14 @@ export const SettingsScreen: React.FC = () => {
                   } as any,
                 ]}
                 value={knownWeight}
-                onChangeText={setKnownWeight}
-                keyboardType="numeric"
+                onChangeText={handleKnownWeightChange}
+                keyboardType="number-pad"
+                inputMode="numeric"
                 maxLength={4}
+                placeholder="0"
+                placeholderTextColor={theme.textDisabled}
               />
-              <Text style={[styles.weightSuffix, { color: theme.textMuted }]}>grams</Text>
+              <Text style={[styles.weightSuffix, { color: theme.textMuted }]}>gms</Text>
             </View>
           </View>
           <TouchableOpacity
@@ -638,20 +646,25 @@ const styles = StyleSheet.create({
   weightInputRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 5,
+    borderRadius: 8,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    marginTop: 6,
+    alignSelf: 'flex-start',
   },
   weightInput: {
-    borderRadius: 6,
-    borderWidth: 0,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
     fontWeight: '700',
-    fontSize: 12,
-    width: 55,
+    fontSize: 13,
+    minWidth: 38,
+    textAlign: 'center',
+    borderWidth: 0,
+    paddingVertical: 2,
+    paddingHorizontal: 2,
   },
   weightSuffix: {
     fontSize: 11,
-    marginLeft: 6,
+    fontWeight: '700',
+    marginLeft: 3,
   },
   servoGrid: {
     flexDirection: 'row',
