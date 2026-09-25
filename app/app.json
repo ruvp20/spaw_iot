@@ -1,21 +1,17 @@
 {
   "expo": {
-    "name": "Spaw Pet Feeder",
+    "name": "Spaw",
     "slug": "spaw-iot",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
-    "splash": {
-      "backgroundColor": "#0F172A"
-    },
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.spaw.petfeeder"
     },
     "android": {
       "package": "com.spaw.petfeeder",
-      "usesCleartextTraffic": true,
       "adaptiveIcon": {
         "backgroundColor": "#0F172A",
         "foregroundImage": "./assets/android-icon-foreground.png",
@@ -37,6 +33,23 @@
       "eas": {
         "projectId": "641f0be6-e0bd-497e-8f95-8622adfcfd89"
       }
-    }
+    },
+    "plugins": [
+      "expo-font",
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "usesCleartextTraffic": true
+          }
+        }
+      ],
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#0F172A"
+        }
+      ]
+    ]
   }
 }
